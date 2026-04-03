@@ -1,0 +1,28 @@
+fun compute_dt() -> float {
+    var dt = get_frame_time();
+    // Delta-time smoothing..?
+    if dt > avg_dt * 10.0 {
+        print("large dt: ", dt);
+    }
+    dt = if dt > 0.08 { 0.08 } else { dt };
+    
+    avg_dt += (dt - avg_dt) * 0.03;
+    dt = avg_dt;
+
+    dt
+}
+
+var avg_dt = 0.003;
+
+fun update() {
+    // Black background for letter box
+    clear_background((#000f));
+
+    screen.update();
+    screen.draw_bg();
+    
+    // Handle game logic
+    var dt = compute_dt();
+    update_dt(dt);
+}
+

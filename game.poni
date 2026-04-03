@@ -1,10 +1,49 @@
 class Textures {
-    let test = load_texture("tex/test.png");
+    //let test = load_texture("tex/test.png");
+    let card = load_texture("tex/card.png");
 }
+
+let FONT = load_font("font/Oswald-Regular.ttf");
+
+let screen_size = (256 * 8, 256 * 6);
 
 let tex = new Textures{};
 
-fun update() {
-    clear_background((#93bbe5ff));
-    draw_texture(tex.test, (20, 20), (#ffff));
+let screen = new Screen {
+    target_size: screen_size,
+    target_offset: -screen_size / 2,
+};
+
+fun draw_card(text: StrBuf) {
+    let pos = (30, 30);
+
+    draw_texture(tex.card, pos, (#ffff));
+
+    let font_size = 32.0;
+    let font_scale = 1.2;
+
+    
+    fun draw_text_line(text: StrBuf, line: float, scale: float) {
+        let text_dims = measure_text_fonts(text, FONT, font_size, font_scale * scale);
+
+        let center_x = (256 - text_dims.x) / 2;
+
+        draw_text_fonts(text, FONT, pos + (center_x, text_dims.y + 20 + line * font_size * font_scale * scale * 1.2),
+            font_size, font_scale * scale, (#342f28ff));
+    }
+
+    draw_text_line("Cost 3 Carrot", 0, 1);
+    draw_text_line("Lasts 2", 1, 1);
+
+    draw_text_line("When you gain Carrot,", 3, 0.8);
+    draw_text_line("Move Right 2.", 4, 0.8);
+
+    //draw_text_fonts("Cost 3 Carrot", FONT, pos + ((256 - text_dims.x) / 2, text_dims.y + 20),
+    //    font_size, font_scale, (#342f28ff));
+    //draw_text_fonts("Lasts 2", FONT, pos + ((256 - text_dims.x) / 2, text_dims.y + 20),
+    //    font_size, font_scale, (#342f28ff));
+}
+
+fun update_dt(dt: float) {
+    draw_card("hello");
 }
