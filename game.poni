@@ -342,6 +342,8 @@ class Hand {
 
 class EndTurnButton {
     var energy = 0.0;
+    var pressed = false;
+    var scale = 1.0;
 
     fun update(dt: float) {
         let pos = (screen_size.x - 300, 900);
@@ -354,21 +356,49 @@ class EndTurnButton {
         let rpos = pos - (16, 16);
         let rsize = (text_dim.x, text_dim.y) + (32, 32);
 
+        var target_scale = 1.0;
+
         var highlight = false;
         if energy < 1 {
             energy += dt;
+            highlight = false;
+            pressed = false;
         }
         else {
             let mouse = screen.mouse();
-            if in_rect(mouse, rpos, rsize) {
-                highlight = true;
+            highlight = in_rect(mouse, rpos, rsize);
+
+            if not highlight { pressed = false; }
+
+            if highlight and is_mouse_button_down(MOUSE_LEFT) {
+                pressed = true;
+            }
+
+            if pressed and is_mouse_button_released(MOUSE_LEFT) {
+                pressed = false;
+                energy = 0;
+                //print("End turn!");
+                
             }
         }
 
-        draw_rectangle(rpos, rsize, (#3e3e3eff));
-        draw_rectangle(pos, rsize - 32, (#2c2c2cff));
-        draw_rectangle(rpos, (rsize.x * energy, rsize.y), if highlight { (#b39883ff) } else { (#a38a76ff) });
-        draw_text_fonts("End Turn", FONT, pos + (0, text_dim.y), SIZE, SCALE, (#372f26ff));
+        if highlight { target_scale = 1.2; }
+        if pressed   { target_scale = 0.8; }
+
+        scale += (target_scale - scale) * 0.1;
+
+        gl_push_translation(rpos + rsize * 0.5);
+        gl_push_scale((1, 1) * scale);
+
+        let offset = -rsize * 0.5;
+
+        draw_rectangle(offset , rsize, (#3e3e3eff));
+        draw_rectangle(offset + (16, 16), rsize - 32, (#2c2c2cff));
+        draw_rectangle(offset , (rsize.x * energy, rsize.y), if highlight { (#b39883ff) } else { (#a38a76ff) });
+        draw_text_fonts("End Turn", FONT, offset + (16, 16) + (0, text_dim.y), SIZE, SCALE, (#372f26ff));
+
+        gl_pop();
+        gl_pop();
     }
 }
 
