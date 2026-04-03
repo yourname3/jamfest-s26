@@ -186,7 +186,7 @@ class Card {
 
             if may_add_card and not is_mouse_button_down(MOUSE_LEFT) {
                 // I think we want new cards to go in the discard pile?
-                hand.add_card(self);
+                pile_discard.add(self);
                 may_add_card = false;
             }
 
@@ -196,10 +196,16 @@ class Card {
         }
 
         let DISCARD_PILE_POS = (screen_size.x - SIZE_CARD.x, screen_size.y / 2);
+        let DRAW_PILE_POS                   = (0, screen_size.y / 2);
 
         if state == STATE_DISCARD_PILE {
             target_scale = 0.2;
             position += (DISCARD_PILE_POS - position) * 0.1;
+        }
+
+        if state == STATE_DRAW_PILE {
+            target_scale = 0.2;
+            position += (DRAW_PILE_POS - position) * 0.1;
         }
 
         scale += (target_scale - scale) * 0.1;
@@ -211,46 +217,6 @@ class Card {
             draw(highlight);
         }
     }
-}
-
-fun draw_card(text: StrBuf) {
-    let pos = (30, 30);
-
-    draw_texture(tex.card, pos, (#ffff));
-
-    let font_size = 32.0;
-    let font_scale = 1.2;
-
-    let FONT_COLOR = (#342f28ff);
-
-    
-    fun draw_text_line(text: StrBuf, line: float, scale: float) {
-        let text_dims = measure_text_fonts(text, FONT, font_size, font_scale * scale);
-
-        let center_x = (256 - text_dims.x) / 2;
-
-        draw_text_fonts(text, FONT, pos + (center_x, text_dims.y + 20 + line * font_size * font_scale * scale * 1.2),
-            font_size, font_scale * scale, FONT_COLOR);
-    }
-
-    let cost = str(3);
-    let text_dims = measure_text_fonts(cost, FONT, font_size, font_scale);
-    draw_text_fonts(cost, FONT, pos + (40, text_dims.y), font_size, font_scale, FONT_COLOR);
-
-    //draw_text_line("Cost 3 Carrot", 0, 1);
-    //draw_text_line("Lasts 2", 1, 1);
-
-    draw_text_line("When you gain Carrot,", 3, 0.8);
-    draw_text_line("Move Right 2.", 4, 0.8);
-
-    draw_texture_rot_scale(tex.apple, pos - (16, 0), 0, 64.0 / 256.0, (#ffff));
-
-    //draw_text_fonts("Cost 3 Carrot", FONT, pos + ((256 - text_dims.x) / 2, text_dims.y + 20),
-    //    font_size, font_scale, (#342f28ff));
-    //draw_text_fonts("Lasts 2", FONT, pos + ((256 - text_dims.x) / 2, text_dims.y + 20),
-    //    font_size, font_scale, (#342f28ff));
-
-    draw_texture(tex.arrow_right, pos + ((256, 340) - (256, 256)) / 2, (#ffff));
 }
 
 let CARD_MOVE_RIGHT = new CardData {
@@ -277,7 +243,7 @@ let CARD_MOVE_DOWN = new CardData {
     }
 };
 
-let cards: DynArray[Card] = [
+let ALL_CARDS: DynArray[Card] = [
     new Card {
         data: CARD_MOVE_RIGHT,
     },
@@ -295,37 +261,63 @@ let cards: DynArray[Card] = [
     },
 ];
 
-/// Keeps track of the hand of cards
-class Hand {
+class Pile {
     var cards: DynArray[Card] = [];
+    let state: int;
 
-    fun add_card(card: Card) {
+    fun add(card: Card) {
         cards.push(card);
-        card.state = STATE_HAND;
+        card.state = state;
     }
 
-    fun play_card(card: Card) {
+    /// Returns whether the card was located in the array.
+    fun remove(card: Card) -> bool {
         var new_cards: DynArray[Card] = [];
         var located: bool = false;
 
         for i in 0..cards.length {
             if cards[i] == card {
                 located = true;
+                print("located @ ", i);
             }
             else {
                 new_cards.push(cards[i]);
             }
         }
 
-        if located {
-            card.data.callback();
-            card.state = STATE_DISCARD_PILE;
-        }
+        print(state, " cards.length vs new_cards.length: ", cards.length, " ", new_cards.length);
 
         cards = new_cards;
+        print(located)
+    }
+}
+
+let pile_draw = new Pile { state: STATE_DRAW_PILE };
+let pile_discard = new Pile { state: STATE_DISCARD_PILE };
+let pile_hand = new Pile { state: STATE_HAND };
+
+/// Keeps track of the hand of cards
+class Hand {
+    fun add_card(card: Card) {
+        pile_hand.add(card);
+    }
+
+    fun play_card(card: Card) {
+        if pile_hand.remove(card) {
+            card.data.callback();
+            pile_discard.add(card);
+        }
+    }
+
+    fun discard_card(card: Card) {
+        if pile_hand.remove(card) {
+            pile_discard.add(card);
+        }
     }
 
     fun update() {
+        let cards = pile_hand.cards;
+
         let screen_center = screen_size.x / 2;
         let width = cards.length * SIZE_CARD.x + (cards.length - 1) * 20;
 
@@ -340,13 +332,64 @@ class Hand {
     }
 }
 
+fun shuffle_discard_into_draw() {
+    for i in 0..pile_discard.cards.length {
+        let card = pile_discard.cards[i];
+        pile_draw.cards.push(card);
+        card.state = STATE_DRAW_PILE;
+    }
+    pile_discard.cards = [];
+
+
+    // while pile_discard.cards.length > 0 {
+    //     let card = pile_discard.cards[0];
+    //     pile_discard.remove(card);
+    //     pile_draw.add(card);
+    // }
+
+    // TODO: Randomize the order.
+}
+
+fun draw_card() {
+    fun get_card() -> Card? {
+        if pile_draw.cards.length > 0 {
+            return pile_draw.cards.pop_or_panic();
+        }
+
+        // No cards in draw pile, shuffle the discard pile into the draw pile.
+        shuffle_discard_into_draw();
+
+        if pile_draw.cards.length > 0 {
+            return pile_draw.cards.pop_or_panic();
+        }
+
+        nil
+    }
+
+    let card = get_card();
+    let card = card else return;
+
+    // We already removed the card from pile_draw using pop_or_panic().
+    hand.add_card(card);
+}
+
+fun rollover_turn() {
+    while pile_hand.cards.length > 0 {
+        hand.discard_card(pile_hand.cards[0]);
+    }
+
+    for i in 0..2 {
+        draw_card();
+    }
+}
+
 class EndTurnButton {
     var energy = 0.0;
     var pressed = false;
     var scale = 1.0;
 
     fun update(dt: float) {
-        let pos = (screen_size.x - 300, 900);
+        let pos = (screen_size.x - 300, 1400);
 
         let SIZE = 32;
         let SCALE = 2;
@@ -379,6 +422,7 @@ class EndTurnButton {
                 energy = 0;
                 //print("End turn!");
                 
+                rollover_turn();
             }
         }
 
@@ -409,12 +453,12 @@ let end_turn_button = new EndTurnButton{};
 var has_initialized = false;
 
 fun initialize() {
-    for card in 0..cards.length {
-        hand.cards.push(cards[card]);
-        cards[card].state = STATE_HAND;
+    for card in 0..ALL_CARDS.length {
+        pile_hand.cards.push(ALL_CARDS[card]);
+        ALL_CARDS[card].state = STATE_HAND;
     }
 
-    cards.push(new Card {
+    ALL_CARDS.push(new Card {
         data: CARD_MOVE_RIGHT,
         state: STATE_NEW,
         position: (screen_size.x, screen_size.y / 3) + (SIZE_CARD * 0.5),
@@ -444,10 +488,12 @@ fun update_dt(dt: float) {
     hand.update();
     
 
-    for i in 0..cards.length {
+    for i in 0..ALL_CARDS.length {
         //cards[i].position = (20, 20) + (i * (SIZE_CARD.x + 20), 0);
-        cards[i].update(dt);
+        ALL_CARDS[i].update(dt);
     }
 
     end_turn_button.update(dt);
+
+    //print("hand: ", pile_hand.cards.length, " draw: ", pile_draw.cards.length, " discard: ", pile_discard.cards.length);
 }
