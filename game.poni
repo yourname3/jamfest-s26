@@ -1,6 +1,9 @@
 class Textures {
     //let test = load_texture("tex/test.png");
     let card = load_texture("tex/card.png");
+
+    let carrot = load_texture("tex/carrot.png");
+    let apple = load_texture("tex/apple.png");
 }
 
 let FONT = load_font("font/Oswald-Regular.ttf");
@@ -22,6 +25,8 @@ fun draw_card(text: StrBuf) {
     let font_size = 32.0;
     let font_scale = 1.2;
 
+    let FONT_COLOR = (#342f28ff);
+
     
     fun draw_text_line(text: StrBuf, line: float, scale: float) {
         let text_dims = measure_text_fonts(text, FONT, font_size, font_scale * scale);
@@ -29,14 +34,20 @@ fun draw_card(text: StrBuf) {
         let center_x = (256 - text_dims.x) / 2;
 
         draw_text_fonts(text, FONT, pos + (center_x, text_dims.y + 20 + line * font_size * font_scale * scale * 1.2),
-            font_size, font_scale * scale, (#342f28ff));
+            font_size, font_scale * scale, FONT_COLOR);
     }
 
-    draw_text_line("Cost 3 Carrot", 0, 1);
-    draw_text_line("Lasts 2", 1, 1);
+    let cost = str(3);
+    let text_dims = measure_text_fonts(cost, FONT, font_size, font_scale);
+    draw_text_fonts(cost, FONT, pos + (40, text_dims.y), font_size, font_scale, FONT_COLOR);
+
+    //draw_text_line("Cost 3 Carrot", 0, 1);
+    //draw_text_line("Lasts 2", 1, 1);
 
     draw_text_line("When you gain Carrot,", 3, 0.8);
     draw_text_line("Move Right 2.", 4, 0.8);
+
+    draw_texture_rot_scale(tex.apple, pos - (16, 0), 0, 64.0 / 256.0, (#ffff));
 
     //draw_text_fonts("Cost 3 Carrot", FONT, pos + ((256 - text_dims.x) / 2, text_dims.y + 20),
     //    font_size, font_scale, (#342f28ff));
