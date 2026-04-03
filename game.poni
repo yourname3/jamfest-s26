@@ -54,13 +54,18 @@ class Horse {
     }
 }
 
+class CardData {
+    let icon: Texture2D? = nil;
+    // Cost: negative for apples, positive for carrots? Or is that too jank?
+    let cost: int = 0;
+
+    let callback: fun();
+}
+
 class Card {
     var position: vec2 = (0, 0);
 
-    var icon: Texture2D? = nil;
-
-    // Cost: negative for apples, positive for carrots? Or is that too jank?
-    var cost: int = 0;
+    let data: CardData;
 
     /// Keep track of whether the card is:
     /// - New and available for selection
@@ -80,6 +85,9 @@ class Card {
         let pos = -SIZE_CARD * 0.5;
         let modulate = (#ffff);
         let modulate = if highlight { modulate } else { modulate * 0.95 };
+
+        let icon = data.icon;
+        let cost = data.cost;
 
         draw_texture(tex.card, pos, modulate);
         
@@ -121,12 +129,19 @@ class Card {
             }
 
             if current_moved_card == self {
+                let playable = position.y < screen_size.y / 2;
                 if not is_mouse_button_down(MOUSE_LEFT) {
                     current_moved_card = nil;
+                    if playable {
+                        hand.play_card(self);
+                    }
                 }
                 else {
-                    target_scale = 0.8;
                     position = mouse + current_moved_card_offset;
+                }
+
+                if playable {
+                    target_scale = 0.7;
                 }
             }
             else {
@@ -147,7 +162,12 @@ class Card {
 
         scale += (target_scale - scale) * 0.1;
 
-        draw(highlight);
+        if (state == STATE_DRAW_PILE) or (state == STATE_DISCARD_PILE) {
+            // ?
+        }
+        else {
+            draw(highlight);
+        }
     }
 }
 
@@ -191,17 +211,23 @@ fun draw_card(text: StrBuf) {
     draw_texture(tex.arrow_right, pos + ((256, 340) - (256, 256)) / 2, (#ffff));
 }
 
+let CARD_MOVE_RIGHT = new CardData {
+    icon: tex.arrow_right,
+
+    callback: fun() {
+        horse.position.x += 256;
+    }
+};
+
 let cards: DynArray[Card] = [
     new Card {
-        icon: tex.arrow_right,
+        data: CARD_MOVE_RIGHT,
     },
     new Card {
-        icon: tex.arrow_right,
-        cost: 3
+        data: CARD_MOVE_RIGHT,
     },
     new Card {
-        icon: tex.arrow_right,
-        cost: -3
+        data: CARD_MOVE_RIGHT,
     },
 ];
 
@@ -225,6 +251,11 @@ class Hand {
             else {
                 new_cards.push(cards[i]);
             }
+        }
+
+        if located {
+            card.data.callback();
+            card.state = STATE_DISCARD_PILE;
         }
 
         cards = new_cards;
@@ -257,8 +288,7 @@ fun initialize() {
     }
 
     cards.push(new Card {
-        icon: tex.arrow_right,
-        cost: 1,
+        data: CARD_MOVE_RIGHT,
         state: STATE_NEW,
         position: (screen_size.x, screen_size.y / 3) + (SIZE_CARD * 0.5),
     });
