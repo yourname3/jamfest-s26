@@ -63,10 +63,10 @@ class Card {
     var scale: float = 1.0;
 
     fun draw(highlight: bool) {
-        gl_push_translation(position);
+        gl_push_translation(position + SIZE_CARD * 0.5);
         gl_push_scale((1, 1) * scale);
         
-        let pos = (0, 0);
+        let pos = -SIZE_CARD * 0.5;
         let modulate = (#ffff);
         let modulate = if highlight { modulate } else { modulate * 0.95 };
 
@@ -100,6 +100,8 @@ class Card {
         if (state == STATE_HAND) or (state == STATE_NEW) {
             highlight = current_moved_card.is_nil() and in_rect(mouse, position, SIZE_CARD);
         }
+
+        if highlight { target_scale = 1.2; }
 
         if state == STATE_HAND {
             if highlight and is_mouse_button_down(MOUSE_LEFT) {
