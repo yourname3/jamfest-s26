@@ -4,6 +4,8 @@ class Textures {
 
     let carrot = load_texture("tex/carrot.png");
     let apple = load_texture("tex/apple.png");
+
+    let arrow_right = load_texture("tex/arrow_right.png");
 }
 
 let FONT = load_font("font/Oswald-Regular.ttf");
@@ -16,6 +18,49 @@ let screen = new Screen {
     target_size: screen_size,
     target_offset: -screen_size / 2,
 };
+
+let SIZE_CARD: vec2 = (256, 340);
+let SIZE_ICON: vec2 = (256, 256);
+
+fun in_rect(point: vec2, rect_pos: vec2, rect_size: vec2) -> bool {
+    if (point.x < rect_pos.x) or point.y < rect_pos.y {
+        return false;
+    }
+    let rect_pos = rect_pos + rect_size;
+    if (point.x > rect_pos.x) or point.y > rect_pos.y {
+        return false;
+    }
+
+    true
+}
+
+class Card {
+    var position: vec2 = (0, 0);
+
+    var icon: Texture2D? = nil;
+
+    fun draw(highlight: bool) {
+        let pos = position;
+        let modulate = (#ffff);
+        let modulate = if highlight { modulate } else { modulate * 0.95 };
+
+        draw_texture(tex.card, pos, modulate);
+        
+        if icon.is_some() {
+            let icon = icon.or_panic();
+            let icon_scale = 0.8;
+            draw_texture_rot_scale(icon, pos + (SIZE_CARD - SIZE_ICON * icon_scale) / 2, 0,
+                icon_scale, modulate);
+        }
+    }
+
+    fun update() {
+        let mouse = screen.mouse();
+        let highlight = in_rect(mouse, position, SIZE_CARD);
+
+        draw(highlight);
+    }
+}
 
 fun draw_card(text: StrBuf) {
     let pos = (30, 30);
@@ -53,8 +98,14 @@ fun draw_card(text: StrBuf) {
     //    font_size, font_scale, (#342f28ff));
     //draw_text_fonts("Lasts 2", FONT, pos + ((256 - text_dims.x) / 2, text_dims.y + 20),
     //    font_size, font_scale, (#342f28ff));
+
+    draw_texture(tex.arrow_right, pos + ((256, 340) - (256, 256)) / 2, (#ffff));
 }
 
+let card = new Card {
+    icon: tex.arrow_right,
+};
+
 fun update_dt(dt: float) {
-    draw_card("hello");
+    card.update();
 }
