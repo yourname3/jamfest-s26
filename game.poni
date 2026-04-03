@@ -291,17 +291,14 @@ class Pile {
         for i in 0..cards.length {
             if cards[i] == card {
                 located = true;
-                print("located @ ", i);
             }
             else {
                 new_cards.push(cards[i]);
             }
         }
 
-        print(state, " cards.length vs new_cards.length: ", cards.length, " ", new_cards.length);
-
         cards = new_cards;
-        print(located)
+        located
     }
 
     fun swap(i: int, j: int) {
@@ -445,7 +442,6 @@ class EndTurnButton {
             if pressed and is_mouse_button_released(MOUSE_LEFT) {
                 pressed = false;
                 energy = 0;
-                //print("End turn!");
                 
                 rollover_turn();
             }
