@@ -6,6 +6,9 @@ class Textures {
     let apple = load_texture("tex/apple.png");
 
     let arrow_right = load_texture("tex/arrow_right.png");
+    let arrow_left  = load_texture("tex/arrow_left.png");
+    let arrow_up    = load_texture("tex/arrow_up.png");
+    let arrow_down  = load_texture("tex/arrow_down.png");
 
     let horse = load_texture("tex/horse4.png");
 }
@@ -246,15 +249,31 @@ let CARD_MOVE_RIGHT = new CardData {
     }
 };
 
+let CARD_MOVE_UP = new CardData {
+    icon: tex.arrow_up,
+
+    callback: fun() {
+        horse.position.y -= 256;
+    }
+};
+
+let CARD_MOVE_DOWN = new CardData {
+    icon: tex.arrow_down,
+
+    callback: fun() {
+        horse.position.y += 256;
+    }
+};
+
 let cards: DynArray[Card] = [
     new Card {
         data: CARD_MOVE_RIGHT,
     },
     new Card {
-        data: CARD_MOVE_RIGHT,
+        data: CARD_MOVE_UP,
     },
     new Card {
-        data: CARD_MOVE_RIGHT,
+        data: CARD_MOVE_DOWN,
     },
 ];
 
