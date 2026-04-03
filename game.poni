@@ -38,6 +38,11 @@ fun in_rect(point: vec2, rect_pos: vec2, rect_size: vec2) -> bool {
 var current_moved_card: Card? = nil;
 var current_moved_card_offset: vec2 = (0, 0);
 
+let STATE_NEW         : int = 0;
+let STATE_DRAW_PILE   : int = 1;
+let STATE_HAND        : int = 2;
+let STATE_DISCARD_PILE: int = 3;
+
 class Card {
     var position: vec2 = (0, 0);
 
@@ -45,6 +50,15 @@ class Card {
 
     // Cost: negative for apples, positive for carrots? Or is that too jank?
     var cost: int = 0;
+
+    /// Keep track of whether the card is:
+    /// - New and available for selection
+    /// - In the draw pile
+    /// - In the hand
+    /// - In the discard pile
+    var state: int = 0;
+
+    var hand_position: vec2 = (0, 0);
 
     fun draw(highlight: bool) {
         let pos = position;
@@ -70,20 +84,29 @@ class Card {
     }
 
     fun update() {
+        var highlight = false;
         let mouse = screen.mouse();
-        let highlight = current_moved_card.is_nil() and in_rect(mouse, position, SIZE_CARD);
 
-        if highlight and is_mouse_button_down(MOUSE_LEFT) {
-            current_moved_card = self;
-            current_moved_card_offset = position - mouse;
+        if (state == STATE_HAND) or (state == STATE_NEW) {
+            highlight = current_moved_card.is_nil() and in_rect(mouse, position, SIZE_CARD);
         }
 
-        if current_moved_card == self {
-            if not is_mouse_button_down(MOUSE_LEFT) {
-                current_moved_card = nil;
+        if state == STATE_HAND {
+            if highlight and is_mouse_button_down(MOUSE_LEFT) {
+                current_moved_card = self;
+                current_moved_card_offset = position - mouse;
+            }
+
+            if current_moved_card == self {
+                if not is_mouse_button_down(MOUSE_LEFT) {
+                    current_moved_card = nil;
+                }
+                else {
+                    position = mouse + current_moved_card_offset;
+                }
             }
             else {
-                position = mouse + current_moved_card_offset;
+                position += (hand_position - position) * 0.8;
             }
         }
 
@@ -145,7 +168,65 @@ let cards = [
     },
 ];
 
+/// Keeps track of the hand of cards
+class Hand {
+    var cards: DynArray[Card] = [];
+
+    fun add_card(card: Card) {
+        cards.push(card);
+        card.state = STATE_HAND;
+    }
+
+    fun play_card(card: Card) {
+        var new_cards: DynArray[Card] = [];
+        var located: bool = false;
+
+        for i in 0..cards.length {
+            if cards[i] == card {
+                located = true;
+            }
+            else {
+                new_cards.push(cards[i]);
+            }
+        }
+
+        cards = new_cards;
+    }
+
+    fun update() {
+        let screen_center = screen_size.x / 2;
+        let width = cards.length * SIZE_CARD.x + (cards.length - 1) * 20;
+
+        let start_x = screen_center - width * 0.5;
+        let increment: float = SIZE_CARD.x + 20;
+
+        for i in 0..cards.length {
+            let card = cards[i];
+
+            card.hand_position = (start_x + increment * i, 1000);
+        }
+    }
+}
+
+let hand = new Hand{};
+
+var has_initialized = false;
+
+fun initialize() {
+    for card in 0..cards.length {
+        hand.cards.push(cards[card]);
+        cards[card].state = STATE_HAND;
+    }
+}
+
 fun update_dt(dt: float) {
+    if not has_initialized {
+        initialize();
+        has_initialized = true;
+    }
+
+    hand.update();
+
     for i in 0..cards.length {
         //cards[i].position = (20, 20) + (i * (SIZE_CARD.x + 20), 0);
         cards[i].update();
