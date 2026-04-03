@@ -91,7 +91,7 @@ class Card {
         gl_pop();
     }
 
-    fun update() {
+    fun update(delta: float) {
         var highlight = false;
         let mouse = screen.mouse();
 
@@ -120,6 +120,17 @@ class Card {
             }
             else {
                 position += (hand_position - position) * 0.8;
+            }
+        }
+
+        if state == STATE_NEW {
+            position.x -= 256 * delta;
+
+            target_scale *= 0.5;
+
+            // I think we want new cards to go in the discard pile?
+            if highlight and is_mouse_button_down(MOUSE_LEFT) {
+                hand.add_card(self);
             }
         }
 
@@ -169,7 +180,7 @@ fun draw_card(text: StrBuf) {
     draw_texture(tex.arrow_right, pos + ((256, 340) - (256, 256)) / 2, (#ffff));
 }
 
-let cards = [
+let cards: DynArray[Card] = [
     new Card {
         icon: tex.arrow_right,
     },
@@ -232,6 +243,13 @@ fun initialize() {
         hand.cards.push(cards[card]);
         cards[card].state = STATE_HAND;
     }
+
+    cards.push(new Card {
+        icon: tex.arrow_right,
+        cost: 1,
+        state: STATE_NEW,
+        position: (screen_size.x, screen_size.y / 3) + (SIZE_CARD * 0.5),
+    });
 }
 
 fun update_dt(dt: float) {
@@ -244,6 +262,6 @@ fun update_dt(dt: float) {
 
     for i in 0..cards.length {
         //cards[i].position = (20, 20) + (i * (SIZE_CARD.x + 20), 0);
-        cards[i].update();
+        cards[i].update(dt);
     }
 }
