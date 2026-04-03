@@ -9,6 +9,7 @@ class Textures {
 }
 
 let FONT = load_font("font/Oswald-Regular.ttf");
+let FONT_COLOR = (#342f28ff);
 
 let screen_size = (256 * 8, 256 * 6);
 
@@ -34,10 +35,16 @@ fun in_rect(point: vec2, rect_pos: vec2, rect_size: vec2) -> bool {
     true
 }
 
+var current_moved_card: Card? = nil;
+var current_moved_card_offset: vec2 = (0, 0);
+
 class Card {
     var position: vec2 = (0, 0);
 
     var icon: Texture2D? = nil;
+
+    // Cost: negative for apples, positive for carrots? Or is that too jank?
+    var cost: int = 0;
 
     fun draw(highlight: bool) {
         let pos = position;
@@ -52,11 +59,33 @@ class Card {
             draw_texture_rot_scale(icon, pos + (SIZE_CARD - SIZE_ICON * icon_scale) / 2, 0,
                 icon_scale, modulate);
         }
+
+        if cost != 0 {
+            let cost = if cost < 0 { (cost, tex.apple) } else { (cost, tex.carrot) };
+
+            draw_texture_rot_scale(cost.1, pos, 0, 0.2, modulate);
+            draw_text_fonts("3", FONT, pos + (60, 40),
+                32.0, 1.2, FONT_COLOR);
+        }
     }
 
     fun update() {
         let mouse = screen.mouse();
-        let highlight = in_rect(mouse, position, SIZE_CARD);
+        let highlight = current_moved_card.is_nil() and in_rect(mouse, position, SIZE_CARD);
+
+        if highlight and is_mouse_button_down(MOUSE_LEFT) {
+            current_moved_card = self;
+            current_moved_card_offset = position - mouse;
+        }
+
+        if current_moved_card == self {
+            if not is_mouse_button_down(MOUSE_LEFT) {
+                current_moved_card = nil;
+            }
+            else {
+                position = mouse + current_moved_card_offset;
+            }
+        }
 
         draw(highlight);
     }
@@ -102,10 +131,23 @@ fun draw_card(text: StrBuf) {
     draw_texture(tex.arrow_right, pos + ((256, 340) - (256, 256)) / 2, (#ffff));
 }
 
-let card = new Card {
-    icon: tex.arrow_right,
-};
+let cards = [
+    new Card {
+        icon: tex.arrow_right,
+    },
+    new Card {
+        icon: tex.arrow_right,
+        cost: 3
+    },
+    new Card {
+        icon: tex.arrow_right,
+        cost: -3
+    },
+];
 
 fun update_dt(dt: float) {
-    card.update();
+    for i in 0..cards.length {
+        //cards[i].position = (20, 20) + (i * (SIZE_CARD.x + 20), 0);
+        cards[i].update();
+    }
 }
