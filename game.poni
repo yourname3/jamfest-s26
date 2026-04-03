@@ -6,6 +6,8 @@ class Textures {
     let apple = load_texture("tex/apple.png");
 
     let arrow_right = load_texture("tex/arrow_right.png");
+
+    let horse = load_texture("tex/horse4.png");
 }
 
 let FONT = load_font("font/Oswald-Regular.ttf");
@@ -42,6 +44,15 @@ let STATE_NEW         : int = 0;
 let STATE_DRAW_PILE   : int = 1;
 let STATE_HAND        : int = 2;
 let STATE_DISCARD_PILE: int = 3;
+
+class Horse {
+    var position: vec2 = (screen_size.x / 2, 0);
+
+    fun update(delta: float) {
+        position.x -= delta * 256;
+        draw_texture(tex.horse, position, (#ffff));
+    }
+}
 
 class Card {
     var position: vec2 = (0, 0);
@@ -235,6 +246,7 @@ class Hand {
 }
 
 let hand = new Hand{};
+let horse = new Horse{};
 
 var has_initialized = false;
 
@@ -258,7 +270,10 @@ fun update_dt(dt: float) {
         has_initialized = true;
     }
 
+    horse.update(dt);
+
     hand.update();
+    
 
     for i in 0..cards.length {
         //cards[i].position = (20, 20) + (i * (SIZE_CARD.x + 20), 0);
