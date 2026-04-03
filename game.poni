@@ -31,6 +31,8 @@ let screen = new Screen {
 let SIZE_CARD: vec2 = (256, 340);
 let SIZE_ICON: vec2 = (256, 256);
 
+var current_scroll_speed: float = 128;
+
 fun in_rect(point: vec2, rect_pos: vec2, rect_size: vec2) -> bool {
     if (point.x < rect_pos.x) or point.y < rect_pos.y {
         return false;
@@ -57,7 +59,7 @@ class Horse {
     var position: vec2 = (screen_size.x / 2, 0);
 
     fun update(delta: float) {
-        position.x -= delta * 256;
+        position.x -= delta * current_scroll_speed;
         draw_texture(tex.horse, position, (#ffff));
     }
 }
@@ -172,7 +174,7 @@ class Card {
         }
 
         if state == STATE_NEW {
-            position.x -= 256 * delta;
+            position.x -= current_scroll_speed * delta;
 
             target_scale *= 0.5;
    
@@ -219,6 +221,9 @@ class Card {
     }
 }
 
+var apples = 0;
+var carrots = 0;
+
 let CARD_MOVE_RIGHT = new CardData {
     icon: tex.arrow_right,
 
@@ -243,22 +248,30 @@ let CARD_MOVE_DOWN = new CardData {
     }
 };
 
+let CARD_GAIN_APPLE = new CardData {
+    icon: tex.apple,
+
+    callback: fun() { apples += 1; }
+};
+
+let CARD_GAIN_CARROT = new CardData {
+    icon: tex.carrot,
+
+    callback: fun() { carrots += 1; }
+};
+
 let ALL_CARDS: DynArray[Card] = [
-    new Card {
-        data: CARD_MOVE_RIGHT,
-    },
-    new Card {
-        data: CARD_MOVE_RIGHT,
-    },
-    new Card {
-        data: CARD_MOVE_RIGHT,
-    },
-    new Card {
-        data: CARD_MOVE_UP,
-    },
-    new Card {
-        data: CARD_MOVE_DOWN,
-    },
+    new Card { data: CARD_MOVE_RIGHT  },
+    new Card { data: CARD_MOVE_UP     },
+    new Card { data: CARD_MOVE_DOWN   },
+    new Card { data: CARD_GAIN_APPLE  },
+    new Card { data: CARD_GAIN_CARROT },
+
+    new Card { data: CARD_MOVE_RIGHT  },
+    new Card { data: CARD_MOVE_UP     },
+    new Card { data: CARD_MOVE_DOWN   },
+    new Card { data: CARD_GAIN_APPLE  },
+    new Card { data: CARD_GAIN_CARROT },
 ];
 
 class Pile {
@@ -289,6 +302,18 @@ class Pile {
 
         cards = new_cards;
         print(located)
+    }
+
+    fun swap(i: int, j: int) {
+        let tmp = cards[i];
+        cards[i] = cards[j];
+        cards[j] = tmp;
+    }
+
+    fun shuffle() {
+        for i in 0..=cards.length - 2 {
+            let j = randi_range(i, cards.length - 1);
+        }
     }
 }
 
@@ -378,7 +403,7 @@ fun rollover_turn() {
         hand.discard_card(pile_hand.cards[0]);
     }
 
-    for i in 0..2 {
+    for i in 0..5 {
         draw_card();
     }
 }
@@ -453,9 +478,18 @@ let end_turn_button = new EndTurnButton{};
 var has_initialized = false;
 
 fun initialize() {
-    for card in 0..ALL_CARDS.length {
-        pile_hand.cards.push(ALL_CARDS[card]);
-        ALL_CARDS[card].state = STATE_HAND;
+    // for card in 0..ALL_CARDS.length {
+    //     pile_hand.cards.push(ALL_CARDS[card]);
+    //     ALL_CARDS[card].state = STATE_HAND;
+    // }
+
+    for i in 0..ALL_CARDS.length {
+        pile_draw.add(ALL_CARDS[i]);
+    }
+
+    pile_draw.shuffle();
+    for i in 0..5 {
+        draw_card();
     }
 
     ALL_CARDS.push(new Card {
@@ -466,7 +500,7 @@ fun initialize() {
 }
 
 fun update_lanes(dt: float) {
-    lane_position -= dt * 256;
+    lane_position -= dt * current_scroll_speed;
     draw_texture(tex.lanes, (lane_position, 0), (#ffff));
     draw_texture(tex.lanes, (lane_position + screen_size.x, 0), (#ffff));
 
