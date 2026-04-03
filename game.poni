@@ -78,13 +78,19 @@ class Card {
 
     var scale: float = 1.0;
 
+    var may_add_card: bool = false;
+
     fun draw(highlight: bool) {
         gl_push_translation(position + SIZE_CARD * 0.5);
         gl_push_scale((1, 1) * scale);
         
         let pos = -SIZE_CARD * 0.5;
         let modulate = (#ffff);
-        let modulate = if highlight { modulate } else { modulate * 0.95 };
+        var modulate = if highlight { modulate } else { modulate * 0.95 };
+
+        if may_add_card {
+            modulate = (#ffff) * 0.85;
+        }
 
         let icon = data.icon;
         let cost = data.cost;
@@ -111,6 +117,7 @@ class Card {
     }
 
     fun update(delta: float) {
+        // Reset addibility
         var highlight = false;
         let mouse = screen.mouse();
 
@@ -153,17 +160,37 @@ class Card {
             position.x -= 256 * delta;
 
             target_scale *= 0.5;
-
-            // I think we want new cards to go in the discard pile?
+   
             if highlight and is_mouse_button_down(MOUSE_LEFT) {
-                hand.add_card(self);
+                may_add_card = true;
             }
+
+            if not highlight {
+                may_add_card = false;
+            }
+
+            if may_add_card and not is_mouse_button_down(MOUSE_LEFT) {
+                // I think we want new cards to go in the discard pile?
+                hand.add_card(self);
+                may_add_card = false;
+            }
+
+            if may_add_card {
+                target_scale *= 0.93;
+            }
+        }
+
+        let DISCARD_PILE_POS = (screen_size.x - 20, screen_size.y / 2);
+
+        if state == STATE_DISCARD_PILE {
+            target_scale = 0.2;
+            position += (DISCARD_PILE_POS - position) * 0.1;
         }
 
         scale += (target_scale - scale) * 0.1;
 
         if (state == STATE_DRAW_PILE) or (state == STATE_DISCARD_PILE) {
-            // ?
+            draw(highlight);
         }
         else {
             draw(highlight);
