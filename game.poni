@@ -60,8 +60,13 @@ class Card {
 
     var hand_position: vec2 = (0, 0);
 
+    var scale: float = 1.0;
+
     fun draw(highlight: bool) {
-        let pos = position;
+        gl_push_translation(position);
+        gl_push_scale((1, 1) * scale);
+        
+        let pos = (0, 0);
         let modulate = (#ffff);
         let modulate = if highlight { modulate } else { modulate * 0.95 };
 
@@ -81,11 +86,16 @@ class Card {
             draw_text_fonts("3", FONT, pos + (60, 40),
                 32.0, 1.2, FONT_COLOR);
         }
+
+        gl_pop();
+        gl_pop();
     }
 
     fun update() {
         var highlight = false;
         let mouse = screen.mouse();
+
+        var target_scale = 1.0;
 
         if (state == STATE_HAND) or (state == STATE_NEW) {
             highlight = current_moved_card.is_nil() and in_rect(mouse, position, SIZE_CARD);
@@ -102,6 +112,7 @@ class Card {
                     current_moved_card = nil;
                 }
                 else {
+                    target_scale = 0.8;
                     position = mouse + current_moved_card_offset;
                 }
             }
@@ -109,6 +120,8 @@ class Card {
                 position += (hand_position - position) * 0.8;
             }
         }
+
+        scale += (target_scale - scale) * 0.1;
 
         draw(highlight);
     }
