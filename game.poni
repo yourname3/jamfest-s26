@@ -340,8 +340,41 @@ class Hand {
     }
 }
 
+class EndTurnButton {
+    var energy = 0.0;
+
+    fun update(dt: float) {
+        let pos = (screen_size.x - 300, 900);
+
+        let SIZE = 32;
+        let SCALE = 2;
+
+        let text_dim = measure_text_fonts("End Turn", FONT, SIZE, SCALE);
+
+        let rpos = pos - (16, 16);
+        let rsize = (text_dim.x, text_dim.y) + (32, 32);
+
+        var highlight = false;
+        if energy < 1 {
+            energy += dt;
+        }
+        else {
+            let mouse = screen.mouse();
+            if in_rect(mouse, rpos, rsize) {
+                highlight = true;
+            }
+        }
+
+        draw_rectangle(rpos, rsize, (#3e3e3eff));
+        draw_rectangle(pos, rsize - 32, (#2c2c2cff));
+        draw_rectangle(rpos, (rsize.x * energy, rsize.y), if highlight { (#b39883ff) } else { (#a38a76ff) });
+        draw_text_fonts("End Turn", FONT, pos + (0, text_dim.y), SIZE, SCALE, (#372f26ff));
+    }
+}
+
 let hand = new Hand{};
 let horse = new Horse{};
+let end_turn_button = new EndTurnButton{};
 
 var has_initialized = false;
 
@@ -385,4 +418,6 @@ fun update_dt(dt: float) {
         //cards[i].position = (20, 20) + (i * (SIZE_CARD.x + 20), 0);
         cards[i].update(dt);
     }
+
+    end_turn_button.update(dt);
 }
