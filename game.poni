@@ -1,6 +1,7 @@
 class Textures {
     //let test = load_texture("tex/test.png");
     let card = load_texture("tex/card.png");
+    let card_back = load_texture("tex/card_back.png");
 
     let carrot = load_texture("tex/carrot.png");
     let apple = load_texture("tex/apple.png");
@@ -97,6 +98,13 @@ class Card {
 
         let icon = data.icon;
         let cost = data.cost;
+
+        if (state == STATE_DISCARD_PILE) or (state == STATE_DRAW_PILE) and (scale < 0.4) {
+            draw_texture(tex.card_back, pos, modulate);
+            gl_pop();
+            gl_pop();
+            return;
+        }
 
         draw_texture(tex.card, pos, modulate);
         
