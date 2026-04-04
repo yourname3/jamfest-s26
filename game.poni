@@ -2,7 +2,7 @@ let CARD_MOVE_RIGHT = new CardData {
     icon: tex.arrow_right,
 
     callback: fun() {
-        horse.position.x += 256;
+        right(1);
     }
 };
 
@@ -10,7 +10,7 @@ let CARD_MOVE_UP = new CardData {
     icon: tex.arrow_up,
 
     callback: fun() {
-        horse.position.y -= 256;
+        up(1);
     }
 };
 
@@ -18,20 +18,20 @@ let CARD_MOVE_DOWN = new CardData {
     icon: tex.arrow_down,
 
     callback: fun() {
-        horse.position.y += 256;
+        down(1);
     }
 };
 
 let CARD_GAIN_APPLE = new CardData {
     icon: tex.apple,
 
-    callback: fun() { apples.count += 1; }
+    callback: fun() { gain_apples(1); }
 };
 
 let CARD_GAIN_CARROT = new CardData {
     icon: tex.carrot,
 
-    callback: fun() { carrots.count += 1; }
+    callback: fun() { gain_carrots(1); }
 };
 
 let CARD_MOVE_4 = new CardData {
@@ -93,6 +93,33 @@ let REWARD_CARDS = [
     CARD_GAIN_APPLE_UP,
     CARD_GAIN_CARROT_DOWN,
 ];
+
+fun up(tiles: int) {
+    for i in 0..tiles {
+        if horse.position.y > 0 {
+            horse.position.y -= 256;
+        }
+    }
+}
+fun down(tiles: int) {
+    for i in 0..tiles {
+        if horse.position.y < 512 {
+            horse.position.y += 256;
+        }
+    }
+}
+fun left(tiles: int) {
+    horse.position.x -= 256;
+}
+fun right(tiles: int) {
+    horse.position.x += 256;
+}
+fun gain_apples(count: int) {
+    apples.count += count;
+}
+fun gain_carrots(count: int) {
+    carrots.count += count;
+}
 
 class Textures {
     //let test = load_texture("tex/test.png");
