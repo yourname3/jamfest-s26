@@ -25,13 +25,13 @@ let CARD_MOVE_DOWN = new CardData {
 let CARD_GAIN_APPLE = new CardData {
     icon: tex.apple,
 
-    callback: fun() { apples += 1; }
+    callback: fun() { apples.count += 1; }
 };
 
 let CARD_GAIN_CARROT = new CardData {
     icon: tex.carrot,
 
-    callback: fun() { carrots += 1; }
+    callback: fun() { carrots.count += 1; }
 };
 
 let CARD_MOVE_4 = new CardData {
@@ -56,8 +56,8 @@ let CARD_FARM_LEFT = new CardData {
 
     callback: fun() { 
         horse.position.x -= 256 * 3;
-        apples += 2;
-        carrots += 2;
+        apples.count += 2;
+        carrots.count += 2;
     }
 };
 
@@ -304,8 +304,14 @@ class Card {
     }
 }
 
-var apples = 0;
-var carrots = 0;
+let apples = new FruitCounter {
+    texture: tex.apple,
+    position: (1000, 1000)
+};
+let carrots = new FruitCounter {
+    texture: tex.carrot,
+    position: (1000, 1200)
+};
 
 let ALL_CARDS: DynArray[Card] = [
     new Card { data: CARD_MOVE_4  },
@@ -557,6 +563,23 @@ fun update_lanes(dt: float) {
     }
 }
 
+class FruitCounter {
+    var count: int = 0;
+
+    let texture: Texture2D;
+    var position: vec2;
+
+    fun update() {
+        draw_texture_rot_scale(texture, position, 0, 0.5, (#ffff));
+
+        let text = str(count);
+        let dims = measure_text_fonts(text, FONT, 64, 2);
+        let dims = (dims.x, dims.y);
+
+        draw_text_fonts(text, FONT, position + (256 * 0.5, dims.y), 64, 2, (#535353ff));
+    }
+}
+
 fun update_dt(dt: float) {
     if not has_initialized {
         initialize();
@@ -568,7 +591,13 @@ fun update_dt(dt: float) {
     horse.update(dt);
 
     hand.update();
-    
+
+    apples.update();
+    carrots.update();
+
+    //apples.position.x = carrots.position.x = 1800;
+    apples.position = (20, screen_size.y - 128 - 20);
+    carrots.position = (20 + 400, screen_size.y - 128 - 20);
 
     for i in 0..ALL_CARDS.length {
         //cards[i].position = (20, 20) + (i * (SIZE_CARD.x + 20), 0);
