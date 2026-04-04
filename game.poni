@@ -299,8 +299,8 @@ class Card {
             }
         }
 
-        let DISCARD_PILE_POS = (screen_size.x - SIZE_CARD.x, screen_size.y / 2);
-        let DRAW_PILE_POS                   = (0, screen_size.y / 2);
+        let DISCARD_PILE_POS: vec2 = (screen_size.x - SIZE_CARD.x, (screen_size.y / 2) + 100);
+        let DRAW_PILE_POS: vec2    = (0,                           (screen_size.y / 2) + 100);
 
         if state == STATE_DISCARD_PILE {
             target_scale = 0.2;
@@ -575,11 +575,26 @@ fun initialize() {
         draw_card();
     }
 
-    ALL_CARDS.push(new Card {
-        data: CARD_MOVE_RIGHT,
-        state: STATE_NEW,
-        position: (screen_size.x, screen_size.y / 3) + (SIZE_CARD * 0.5),
-    });
+    // ALL_CARDS.push(new Card {
+    //     data: CARD_MOVE_RIGHT,
+    //     state: STATE_NEW,
+    //     position: (screen_size.x, screen_size.y / 3) + (SIZE_CARD * 0.5),
+    // });
+    spawn_rewards();
+}
+
+// Spawns cards off-screen.
+fun spawn_rewards() {
+    for i in 0..4 {
+        let i : float = i;
+        var card = new Card {
+            data: CARD_MOVE_RIGHT,
+            state: STATE_NEW,
+            position: (screen_size.x + 0.25 * i * screen_size.x, screen_size.y / 3) + (SIZE_CARD * 0.5)
+        };
+
+        ALL_CARDS.push(card);
+    }
 }
 
 fun update_lanes(dt: float) {
@@ -589,6 +604,8 @@ fun update_lanes(dt: float) {
 
     while lane_position < -screen_size.x {
         lane_position += screen_size.x;
+
+        spawn_rewards();
     }
 }
 
@@ -634,6 +651,13 @@ fun update_dt(dt: float) {
     }
 
     end_turn_button.update(dt);
+
+    // Increase speed by 2 every 10 seconds
+    current_scroll_speed += 2 * dt / 10;
+
+    if current_scroll_speed > 512 {
+        current_scroll_speed = 512;
+    }
 
     //print("hand: ", pile_hand.cards.length, " draw: ", pile_draw.cards.length, " discard: ", pile_discard.cards.length);
 }
