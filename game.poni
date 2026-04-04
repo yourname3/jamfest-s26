@@ -1,3 +1,66 @@
+let CARD_MOVE_RIGHT = new CardData {
+    icon: tex.arrow_right,
+
+    callback: fun() {
+        horse.position.x += 256;
+    }
+};
+
+let CARD_MOVE_UP = new CardData {
+    icon: tex.arrow_up,
+
+    callback: fun() {
+        horse.position.y -= 256;
+    }
+};
+
+let CARD_MOVE_DOWN = new CardData {
+    icon: tex.arrow_down,
+
+    callback: fun() {
+        horse.position.y += 256;
+    }
+};
+
+let CARD_GAIN_APPLE = new CardData {
+    icon: tex.apple,
+
+    callback: fun() { apples += 1; }
+};
+
+let CARD_GAIN_CARROT = new CardData {
+    icon: tex.carrot,
+
+    callback: fun() { carrots += 1; }
+};
+
+let CARD_MOVE_4 = new CardData {
+    rows: [
+        [tex.arrow_right, tex.arrow_right],
+        [tex.arrow_right, tex.arrow_right],
+    ],
+
+    cost: -3,
+    scale: 0.5,
+
+    callback: fun() { horse.position.x += 256 * 4; }
+};
+
+let CARD_FARM_LEFT = new CardData {
+    rows: [
+        [tex.arrow_left, tex.arrow_left, tex.arrow_left],
+        [tex.apple, tex.apple],
+        [tex.carrot, tex.carrot],
+    ],
+    scale: 0.335,
+
+    callback: fun() { 
+        horse.position.x -= 256 * 3;
+        apples += 2;
+        carrots += 2;
+    }
+};
+
 class Textures {
     //let test = load_texture("tex/test.png");
     let card = load_texture("tex/card.png");
@@ -243,69 +306,6 @@ class Card {
 
 var apples = 0;
 var carrots = 0;
-
-let CARD_MOVE_RIGHT = new CardData {
-    icon: tex.arrow_right,
-
-    callback: fun() {
-        horse.position.x += 256;
-    }
-};
-
-let CARD_MOVE_UP = new CardData {
-    icon: tex.arrow_up,
-
-    callback: fun() {
-        horse.position.y -= 256;
-    }
-};
-
-let CARD_MOVE_DOWN = new CardData {
-    icon: tex.arrow_down,
-
-    callback: fun() {
-        horse.position.y += 256;
-    }
-};
-
-let CARD_GAIN_APPLE = new CardData {
-    icon: tex.apple,
-
-    callback: fun() { apples += 1; }
-};
-
-let CARD_GAIN_CARROT = new CardData {
-    icon: tex.carrot,
-
-    callback: fun() { carrots += 1; }
-};
-
-let CARD_MOVE_4 = new CardData {
-    rows: [
-        [tex.arrow_right, tex.arrow_right],
-        [tex.arrow_right, tex.arrow_right],
-    ],
-
-    cost: -3,
-    scale: 0.5,
-
-    callback: fun() { horse.position.x += 256 * 4; }
-};
-
-let CARD_FARM_LEFT = new CardData {
-    rows: [
-        [tex.arrow_left, tex.arrow_left, tex.arrow_left],
-        [tex.apple, tex.apple],
-        [tex.carrot, tex.carrot],
-    ],
-    scale: 0.335,
-
-    callback: fun() { 
-        horse.position.x -= 256 * 3;
-        apples += 2;
-        carrots += 2;
-    }
-};
 
 let ALL_CARDS: DynArray[Card] = [
     new Card { data: CARD_MOVE_4  },
