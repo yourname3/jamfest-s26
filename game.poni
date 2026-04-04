@@ -134,6 +134,35 @@ let CARD_GAIN_CARROT_DOWN = new CardData {
     }
 };
 
+let CARD_ONETIME_6APPLE = new CardData {
+    rows: [
+        [tex.apple, tex.apple, tex.apple],
+        [tex.apple, tex.apple, tex.apple],
+        [tex.destroy_card],
+    ],
+    scale: 0.33,
+
+    destroys_self: true,
+
+    callback: fun() {
+        gain_apples(6);
+    }
+};
+
+let CARD_ONETIME_MOVE3 = new CardData {
+    rows: [
+        [tex.arrow_right, tex.arrow_right, tex.arrow_right],
+        [tex.destroy_card],
+    ],
+    scale: 0.33,
+
+    destroys_self: true,
+
+    callback: fun() {
+        right(3);
+    }
+};
+
 let REWARD_CARDS = [
     CARD_MOVE_2,
     CARD_MOVE_4,
@@ -143,6 +172,9 @@ let REWARD_CARDS = [
 
     CARD_DRAW_2,
     CARD_DRAW_4,
+
+    CARD_ONETIME_6APPLE,
+    CARD_ONETIME_MOVE3,
 ];
 
 fun up(tiles: int) {
@@ -178,6 +210,7 @@ class Textures {
     let card_back = load_texture("tex/card_back.png");
 
     let draw_card = load_texture("tex/draw_card.png");
+    let destroy_card = load_texture("tex/destroy_card.png");
 
     let carrot = load_texture("tex/carrot.png");
     let apple = load_texture("tex/apple.png");
@@ -228,6 +261,7 @@ let STATE_NEW         : int = 0;
 let STATE_DRAW_PILE   : int = 1;
 let STATE_HAND        : int = 2;
 let STATE_DISCARD_PILE: int = 3;
+let STATE_DESTROYED   : int = 4;
 
 var lane_position: float = 0.0;
 
@@ -246,6 +280,8 @@ class CardData {
     let scale: float = 1.0;
     // Cost: negative for apples, positive for carrots? Or is that too jank?
     let cost: int = 0;
+
+    let destroys_self: bool = false;
 
     let callback: fun();
 }
@@ -268,6 +304,8 @@ class Card {
 
     var may_add_card: bool = false;
 
+    var alpha: float = 1.0;
+
     fun draw(highlight: bool, playable: bool) {
         gl_push_translation(position + SIZE_CARD * 0.5);
         gl_push_scale((1, 1) * scale);
@@ -286,6 +324,8 @@ class Card {
         if (state == STATE_HAND) and not playable {
             modulate = (#ffff) * 0.7;
         }
+
+        modulate *= alpha;
 
         if (state == STATE_DISCARD_PILE) or (state == STATE_DRAW_PILE) and (scale < 0.4) {
             draw_texture(tex.card_back, pos, modulate);
@@ -414,6 +454,7 @@ class Card {
 
         let DISCARD_PILE_POS: vec2 = (screen_size.x - SIZE_CARD.x, (screen_size.y / 2) + 100);
         let DRAW_PILE_POS: vec2    = (0,                           (screen_size.y / 2) + 100);
+        let DESTROYED_POS: vec2    = (screen_size.x + SIZE_CARD.x * 2, (screen_size.y / 2));
 
         if state == STATE_DISCARD_PILE {
             target_scale = 0.2;
@@ -423,6 +464,14 @@ class Card {
         if state == STATE_DRAW_PILE {
             target_scale = 0.2;
             position += (DRAW_PILE_POS - position) * 0.1;
+        }
+
+        if state == STATE_DESTROYED {
+            target_scale = 0.7;
+            position += (DESTROYED_POS - position) * 0.02;
+
+            alpha -= delta * 2.0;
+            if alpha < 0 { alpha = 0; }
         }
 
         scale += (target_scale - scale) * 0.1;
@@ -523,7 +572,12 @@ class Hand {
         if pile_hand.remove(card) {
             apply_costs(card);
             card.data.callback();
-            pile_discard.add(card);
+            if card.data.destroys_self {
+                card.state = STATE_DESTROYED;
+            }
+            else {
+                pile_discard.add(card);
+            }
         }
     }
 
@@ -773,6 +827,7 @@ fun update_dt(dt: float) {
     if current_scroll_speed > 512 {
         current_scroll_speed = 512;
     }
+    //print(current_scroll_speed);
 
     //print("hand: ", pile_hand.cards.length, " draw: ", pile_draw.cards.length, " discard: ", pile_discard.cards.length);
 }
