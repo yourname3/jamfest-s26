@@ -34,16 +34,44 @@ let CARD_GAIN_CARROT = new CardData {
     callback: fun() { gain_carrots(1); }
 };
 
+var draw_card_fn = fun() {};
+
+let CARD_DRAW_2 = new CardData {
+    rows: [
+        [tex.draw_card, tex.draw_card]
+    ],
+
+    cost: 2,
+    scale: 0.5,
+
+    callback: fun() {
+        draw_card_fn();
+        draw_card_fn();
+    }
+};
+
+let CARD_MOVE_2 = new CardData {
+    rows: [
+        [tex.arrow_right],
+        [tex.arrow_right],
+    ],
+
+    cost: -2,
+    scale: 0.5,
+
+    callback: fun() { right(2); }
+};
+
 let CARD_MOVE_4 = new CardData {
     rows: [
         [tex.arrow_right, tex.arrow_right],
         [tex.arrow_right, tex.arrow_right],
     ],
 
-    cost: -3,
+    cost: -5,
     scale: 0.5,
 
-    callback: fun() { horse.position.x += 256 * 4; }
+    callback: fun() { right(4); }
 };
 
 let CARD_FARM_LEFT = new CardData {
@@ -55,9 +83,9 @@ let CARD_FARM_LEFT = new CardData {
     scale: 0.335,
 
     callback: fun() { 
-        horse.position.x -= 256 * 3;
-        apples.count += 2;
-        carrots.count += 2;
+        left(3);
+        gain_apples(2);
+        gain_carrots(2);
     }
 };
 
@@ -69,8 +97,8 @@ let CARD_GAIN_APPLE_UP = new CardData {
     scale: 0.5,
 
     callback: fun() {
-        apples.count += 1;
-        horse.position.y -= 256;
+        gain_apples(1);
+        down(1);
     }
 };
 
@@ -82,16 +110,19 @@ let CARD_GAIN_CARROT_DOWN = new CardData {
     scale: 0.5,
 
     callback: fun() {
-        carrots.count += 1;
-        horse.position.y += 256;
+        gain_carrots(1);
+        up(1);
     }
 };
 
 let REWARD_CARDS = [
+    CARD_MOVE_2,
     CARD_MOVE_4,
     CARD_FARM_LEFT,
     CARD_GAIN_APPLE_UP,
     CARD_GAIN_CARROT_DOWN,
+
+    CARD_DRAW_2,
 ];
 
 fun up(tiles: int) {
@@ -125,6 +156,8 @@ class Textures {
     //let test = load_texture("tex/test.png");
     let card = load_texture("tex/card.png");
     let card_back = load_texture("tex/card_back.png");
+
+    let draw_card = load_texture("tex/draw_card.png");
 
     let carrot = load_texture("tex/carrot.png");
     let apple = load_texture("tex/apple.png");
@@ -690,6 +723,8 @@ fun update_dt(dt: float) {
     if not has_initialized {
         initialize();
         has_initialized = true;
+
+        draw_card_fn = draw_card;
     }
 
     update_lanes(dt);
