@@ -61,6 +61,39 @@ let CARD_FARM_LEFT = new CardData {
     }
 };
 
+let CARD_GAIN_APPLE_UP = new CardData {
+    rows: [
+        [tex.apple],
+        [tex.arrow_up],
+    ],
+    scale: 0.5,
+
+    callback: fun() {
+        apples.count += 1;
+        horse.position.y -= 256;
+    }
+};
+
+let CARD_GAIN_CARROT_DOWN = new CardData {
+    rows: [
+        [tex.carrot],
+        [tex.arrow_up],
+    ],
+    scale: 0.5,
+
+    callback: fun() {
+        carrots.count += 1;
+        horse.position.y += 256;
+    }
+};
+
+let REWARD_CARDS = [
+    CARD_MOVE_4,
+    CARD_FARM_LEFT,
+    CARD_GAIN_APPLE_UP,
+    CARD_GAIN_CARROT_DOWN,
+];
+
 class Textures {
     //let test = load_texture("tex/test.png");
     let card = load_texture("tex/card.png");
@@ -333,9 +366,6 @@ let carrots = new FruitCounter {
 };
 
 let ALL_CARDS: DynArray[Card] = [
-    new Card { data: CARD_MOVE_4  },
-    new Card { data: CARD_FARM_LEFT },
-
     new Card { data: CARD_MOVE_RIGHT  },
     new Card { data: CARD_MOVE_UP     },
     new Card { data: CARD_MOVE_DOWN   },
@@ -587,8 +617,11 @@ fun initialize() {
 fun spawn_rewards() {
     for i in 0..4 {
         let i : float = i;
+
+        let data = REWARD_CARDS[randi_range(0, REWARD_CARDS.length)];
+
         var card = new Card {
-            data: CARD_MOVE_RIGHT,
+            data: data,
             state: STATE_NEW,
             position: (screen_size.x + 0.25 * i * screen_size.x, screen_size.y / 3) + (SIZE_CARD * 0.5)
         };
