@@ -163,6 +163,50 @@ let CARD_ONETIME_MOVE3 = new CardData {
     }
 };
 
+let CARD_CURSE1 = new CardData {
+    rows: [[tex.destroy_card]],
+    scale: 0.5,
+
+    card_kind: CARD_KIND_CURSE,
+
+    destroys_self: true,
+
+    callback: fun(){}
+};
+
+let CARD_CURSE2 = new CardData {
+    rows: [[tex.apple], [tex.destroy_card]],
+    scale: 0.5,
+
+    card_kind: CARD_KIND_CURSE,
+
+    destroys_self: true,
+
+    callback: fun() { gain_apples(1); }
+};
+
+let CARD_CURSE3 = new CardData {
+    rows: [[tex.carrot], [tex.destroy_card]],
+    scale: 0.5,
+
+    card_kind: CARD_KIND_CURSE,
+
+    destroys_self: true,
+
+    callback: fun() { gain_carrots(1); }
+};
+
+let CARD_CURSE4 = new CardData {
+    rows: [[tex.arrow_right], [tex.destroy_card]],
+    scale: 0.5,
+
+    card_kind: CARD_KIND_CURSE,
+
+    destroys_self: true,
+
+    callback: fun() { right(1); }
+};
+
 let REWARD_CARDS = [
     CARD_MOVE_2,
     CARD_MOVE_4,
@@ -175,6 +219,11 @@ let REWARD_CARDS = [
 
     CARD_ONETIME_6APPLE,
     CARD_ONETIME_MOVE3,
+
+    CARD_CURSE1,
+    CARD_CURSE2,
+    CARD_CURSE3,
+    CARD_CURSE4,
 ];
 
 fun up(tiles: int) {
@@ -207,6 +256,7 @@ fun gain_carrots(count: int) {
 class Textures {
     //let test = load_texture("tex/test.png");
     let card = load_texture("tex/card.png");
+    let card_curse = load_texture("tex/card_curse.png");
     let card_back = load_texture("tex/card_back.png");
 
     let draw_card = load_texture("tex/draw_card.png");
@@ -263,6 +313,9 @@ let STATE_HAND        : int = 2;
 let STATE_DISCARD_PILE: int = 3;
 let STATE_DESTROYED   : int = 4;
 
+let CARD_KIND_NORMAL : int = 0;
+let CARD_KIND_CURSE  : int = 1;
+
 var lane_position: float = 0.0;
 
 class Horse {
@@ -282,6 +335,10 @@ class CardData {
     let cost: int = 0;
 
     let destroys_self: bool = false;
+
+    /// 0 for normal
+    /// 1 for curse
+    let card_kind: int = 0;
 
     let callback: fun();
 }
@@ -334,7 +391,9 @@ class Card {
             return;
         }
 
-        draw_texture(tex.card, pos, modulate);
+        let card_tex = if data.card_kind == CARD_KIND_CURSE { tex.card_curse } else { tex.card };
+
+        draw_texture(card_tex, pos, modulate);
         let icon_scale = 0.8;
         
         if icon.is_some() {
@@ -454,7 +513,8 @@ class Card {
 
         let DISCARD_PILE_POS: vec2 = (screen_size.x - SIZE_CARD.x, (screen_size.y / 2) + 100);
         let DRAW_PILE_POS: vec2    = (0,                           (screen_size.y / 2) + 100);
-        let DESTROYED_POS: vec2    = (screen_size.x + SIZE_CARD.x * 2, (screen_size.y / 2));
+       //let DESTROYED_POS: vec2    = (screen_size.x + SIZE_CARD.x * 2, (screen_size.y / 2));
+        let DESTROYED_POS: vec2 = (screen_size.x / 2, -400);
 
         if state == STATE_DISCARD_PILE {
             target_scale = 0.2;
@@ -468,9 +528,9 @@ class Card {
 
         if state == STATE_DESTROYED {
             target_scale = 0.7;
-            position += (DESTROYED_POS - position) * 0.02;
+            position += (DESTROYED_POS - position) * 0.002;
 
-            alpha -= delta * 2.0;
+            alpha -= delta * 4.0;
             if alpha < 0 { alpha = 0; }
         }
 
