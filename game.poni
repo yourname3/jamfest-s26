@@ -302,10 +302,10 @@ class Card {
         }
 
         if cost != 0 {
-            let cost = if cost < 0 { (cost, tex.apple) } else { (cost, tex.carrot) };
+            let cost = if cost < 0 { (-cost, tex.apple) } else { (cost, tex.carrot) };
 
             draw_texture_rot_scale(cost.1, pos, 0, 0.2, modulate);
-            draw_text_fonts("3", FONT, pos + (60, 40),
+            draw_text_fonts(str(cost.0), FONT, pos + (60, 40),
                 32.0, 1.2, FONT_COLOR);
         }
 
