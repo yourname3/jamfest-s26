@@ -66,6 +66,8 @@ class Horse {
 
 class CardData {
     let icon: Texture2D? = nil;
+    let rows: Array[Array[Texture2D]] = [];
+    let scale: float = 1.0;
     // Cost: negative for apples, positive for carrots? Or is that too jank?
     let cost: int = 0;
 
@@ -113,12 +115,30 @@ class Card {
         }
 
         draw_texture(tex.card, pos, modulate);
+        let icon_scale = 0.8;
         
         if icon.is_some() {
             let icon = icon.or_panic();
-            let icon_scale = 0.8;
+            
             draw_texture_rot_scale(icon, pos + (SIZE_CARD - SIZE_ICON * icon_scale) / 2, 0,
                 icon_scale, modulate);
+        }
+
+        let center = pos + SIZE_CARD * 0.5;
+        let step_size = SIZE_ICON * icon_scale * data.scale;
+        let y = center.y - (data.rows.length * step_size.y / 2);
+        for i in 0..data.rows.length {
+            let row = data.rows[i];
+            let x = (center.x - row.length * step_size.x / 2);
+            
+            let y = y + i * step_size.y;
+            for j in 0..row.length {
+
+                let x = x + j * step_size.x;
+
+                draw_texture_rot_scale(row[j], (x, y), 0,
+                    icon_scale * data.scale, modulate);
+            }
         }
 
         if cost != 0 {
@@ -260,7 +280,37 @@ let CARD_GAIN_CARROT = new CardData {
     callback: fun() { carrots += 1; }
 };
 
+let CARD_MOVE_4 = new CardData {
+    rows: [
+        [tex.arrow_right, tex.arrow_right],
+        [tex.arrow_right, tex.arrow_right],
+    ],
+
+    cost: -3,
+    scale: 0.5,
+
+    callback: fun() { horse.position.x += 256 * 4; }
+};
+
+let CARD_FARM_LEFT = new CardData {
+    rows: [
+        [tex.arrow_left, tex.arrow_left, tex.arrow_left],
+        [tex.apple, tex.apple],
+        [tex.carrot, tex.carrot],
+    ],
+    scale: 0.335,
+
+    callback: fun() { 
+        horse.position.x -= 256 * 3;
+        apples += 2;
+        carrots += 2;
+    }
+};
+
 let ALL_CARDS: DynArray[Card] = [
+    new Card { data: CARD_MOVE_4  },
+    new Card { data: CARD_FARM_LEFT },
+
     new Card { data: CARD_MOVE_RIGHT  },
     new Card { data: CARD_MOVE_UP     },
     new Card { data: CARD_MOVE_DOWN   },
