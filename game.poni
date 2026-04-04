@@ -229,30 +229,65 @@ let CURSE_CARDS = [
 ];
 
 fun up(tiles: int) {
-    for i in 0..tiles {
-        if horse.position.y > 0 {
-            horse.position.y -= 256;
-        }
-    }
+    for i in 0..tiles { action_queue_push(ACTION_UP); }
+    // for i in 0..tiles {
+    //     if horse.position.y > 0 {
+    //         horse.position.y -= 256;
+    //     }
+    // }
 }
 fun down(tiles: int) {
-    for i in 0..tiles {
-        if horse.position.y < 512 {
-            horse.position.y += 256;
-        }
-    }
+    for i in 0..tiles { action_queue_push(ACTION_DOWN); }
+    // for i in 0..tiles {
+    //     if horse.position.y < 512 {
+    //         horse.position.y += 256;
+    //     }
+    // }
 }
 fun left(tiles: int) {
-    horse.position.x -= 256 * tiles;
+    for i in 0..tiles { action_queue_push(ACTION_LEFT); }
 }
 fun right(tiles: int) {
-    horse.position.x += 256 * tiles;
+    for i in 0..tiles { action_queue_push(ACTION_RIGHT); }
 }
 fun gain_apples(count: int) {
     apples.count += count;
 }
 fun gain_carrots(count: int) {
     carrots.count += count;
+}
+
+class ActionQueueItem {
+    let action: int;
+    var next: ActionQueueItem?;
+}
+
+var action_queue: ActionQueueItem? = nil;
+var action_queue_push: fun(int) = fun(x: int) {};
+var action_queue_pop: fun() -> ActionQueueItem? = fun() -> ActionQueueItem? { nil };
+
+fun action_queue_push_impl(action: int) {
+    let item = new ActionQueueItem {
+        action: action,
+        next: nil,
+    };
+
+    if action_queue.is_some() {
+        action_queue.or_panic().next = item;
+    }
+    else {
+        action_queue = item;
+    }
+}
+
+fun action_queue_pop_impl() -> ActionQueueItem? {
+    let item = action_queue;
+
+    if action_queue.is_some() {
+        action_queue = action_queue.or_panic().next;
+    }
+
+    item
 }
 
 class Textures {
@@ -321,12 +356,61 @@ let CARD_KIND_CURSE  : int = 1;
 
 var lane_position: float = 0.0;
 
+let ACTION_RIGHT: int = 0;
+let ACTION_LEFT : int = 1;
+let ACTION_UP   : int = 2;
+let ACTION_DOWN : int = 3;
+let ACTION_APPLE: int = 4;
+let ACTION_CARROT: int = 5;
+let ACTION_DRAW:  int = 6;
+
 class Horse {
-    var position: vec2 = (screen_size.x / 2, 0);
+    var position: vec2 = (screen_size.x / 2, 256);
+
+    var current_item: ActionQueueItem? = nil;
+    var action_timer: float = -1.0;
+
+    var lerp_start: vec2 = (0, 0);
+    var lerp_end  : vec2 = (0, 0);
 
     fun update(delta: float) {
         position.x -= delta * current_scroll_speed;
         draw_texture(tex.horse, position, (#ffff));
+
+        if current_item.is_nil() {
+            current_item = action_queue;
+        }
+
+        if current_item.is_some() {
+            if action_timer < 0 {
+                // Just started the action.
+                action_timer = 1.0;
+
+                lerp_start = position;
+                lerp_end = position;
+
+                let action = current_item.or_panic().action;
+                if action == ACTION_RIGHT { lerp_end = position + (256, 0); }
+                if action == ACTION_LEFT { lerp_end = position + (-256, 0); }
+                if action == ACTION_UP { lerp_end = position + (0, -256); }
+                if action == ACTION_DOWN { lerp_end = position + (0, 256); }
+            }
+            else {
+                action_timer -= delta * 10.0;
+
+                let lerp_t = 1.0 - action_timer;
+                position = lerp(lerp_start, lerp_end, lerp_t);
+
+                if action_timer < 0 {
+                    action_timer = -1.0;
+                    action_queue_pop();
+                    // Start the next item next frame.
+                    current_item = action_queue;
+
+                    position = lerp_end;
+                }
+            }
+        }
     }
 }
 
@@ -897,6 +981,8 @@ fun update_dt(dt: float) {
         has_initialized = true;
 
         draw_card_fn = draw_card;
+        action_queue_pop = action_queue_pop_impl;
+        action_queue_push = action_queue_push_impl;
     }
 
     update_lanes(dt);
