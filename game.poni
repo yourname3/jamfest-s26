@@ -556,29 +556,46 @@ class Card {
         if highlight { target_scale = 1.2; }
 
         if state == STATE_HAND {
-            if highlight and playable and is_mouse_button_down(MOUSE_LEFT) {
-                current_moved_card = self;
-                current_moved_card_offset = position - mouse;
+            // if highlight and playable and is_mouse_button_down(MOUSE_LEFT) {
+            //     current_moved_card = self;
+            //     current_moved_card_offset = position - mouse;
+            // }
+            position += (hand_position - position) * 0.1;
+
+            // if current_moved_card == self {
+            //     let playable = playable and (position.y < screen_size.y / 2);
+            //     if not is_mouse_button_down(MOUSE_LEFT) {
+            //         current_moved_card = nil;
+            //         if playable {
+            //             hand.play_card(self);
+            //         }
+            //     }
+            //     else {
+            //         position = mouse + current_moved_card_offset;
+            //     }
+
+            //     if playable {
+            //         target_scale = 0.7;
+            //     }
+            // }
+            // else {
+            //     position += (hand_position - position) * 0.8;
+            // }
+            if highlight and is_mouse_button_down(MOUSE_LEFT) {
+                may_add_card = true;
             }
 
-            if current_moved_card == self {
-                let playable = playable and (position.y < screen_size.y / 2);
-                if not is_mouse_button_down(MOUSE_LEFT) {
-                    current_moved_card = nil;
-                    if playable {
-                        hand.play_card(self);
-                    }
-                }
-                else {
-                    position = mouse + current_moved_card_offset;
-                }
-
-                if playable {
-                    target_scale = 0.7;
-                }
+            if not highlight {
+                may_add_card = false;
             }
-            else {
-                position += (hand_position - position) * 0.8;
+
+            if may_add_card and not is_mouse_button_down(MOUSE_LEFT) {
+                hand.play_card(self);
+                may_add_card = false;
+            }
+
+            if may_add_card {
+                target_scale *= 0.93;
             }
         }
 
