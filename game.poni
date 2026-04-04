@@ -310,6 +310,7 @@ class Pile {
     fun shuffle() {
         for i in 0..=cards.length - 2 {
             let j = randi_range(i, cards.length - 1);
+            swap(i, j)
         }
     }
 }
@@ -362,6 +363,7 @@ fun shuffle_discard_into_draw() {
     }
     pile_discard.cards = [];
 
+    pile_draw.shuffle();
 
     // while pile_discard.cards.length > 0 {
     //     let card = pile_discard.cards[0];
