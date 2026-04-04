@@ -41,10 +41,29 @@ let CARD_DRAW_2 = new CardData {
         [tex.draw_card, tex.draw_card]
     ],
 
-    cost: 2,
+    cost: 1,
     scale: 0.5,
 
     callback: fun() {
+        draw_card_fn();
+        draw_card_fn();
+    }
+};
+
+let CARD_DRAW_4 = new CardData {
+    rows: [
+        [tex.arrow_left],
+        [tex.draw_card, tex.draw_card],
+        [tex.draw_card, tex.draw_card],
+    ],
+
+    cost: 1,
+    scale: 0.33,
+
+    callback: fun() {
+        left(1);
+        draw_card_fn();
+        draw_card_fn();
         draw_card_fn();
         draw_card_fn();
     }
@@ -123,6 +142,7 @@ let REWARD_CARDS = [
     CARD_GAIN_CARROT_DOWN,
 
     CARD_DRAW_2,
+    CARD_DRAW_4,
 ];
 
 fun up(tiles: int) {
