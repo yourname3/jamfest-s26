@@ -251,10 +251,11 @@ fun right(tiles: int) {
     for i in 0..tiles { action_queue_push(ACTION_RIGHT); }
 }
 fun gain_apples(count: int) {
-    apples.count += count;
+    for i in 0..count { action_queue_push(ACTION_APPLE); }
+    //apples.count += count;
 }
 fun gain_carrots(count: int) {
-    carrots.count += count;
+    for i in 0..count { action_queue_push(ACTION_CARROT); }
 }
 
 class ActionQueueItem {
@@ -375,6 +376,8 @@ class Horse {
 
     fun update(delta: float) {
         position.x -= delta * current_scroll_speed;
+        lerp_start.x -= delta * current_scroll_speed;
+        lerp_end.x -= delta * current_scroll_speed;
         draw_texture(tex.horse, position, (#ffff));
 
         if current_item.is_nil() {
@@ -390,10 +393,15 @@ class Horse {
                 lerp_end = position;
 
                 let action = current_item.or_panic().action;
-                if action == ACTION_RIGHT { lerp_end = position + (256, 0); }
-                if action == ACTION_LEFT { lerp_end = position + (-256, 0); }
-                if action == ACTION_UP { lerp_end = position + (0, -256); }
-                if action == ACTION_DOWN { lerp_end = position + (0, 256); }
+                if action == ACTION_RIGHT  { lerp_end = position + ( 256, 0); }
+                if action == ACTION_LEFT   { lerp_end = position + (-256, 0); }
+                if action == ACTION_UP     { lerp_end = position + (0, -256); }
+                if action == ACTION_DOWN   { lerp_end = position + (0,  256); }
+                if action == ACTION_APPLE  { apples.scale = 1.4; apples.count  += 1; }
+                if action == ACTION_CARROT { carrots.scale = 1.4; carrots.count += 1; }
+
+                if lerp_end.y < 0 { lerp_end.y = 0; }
+                if lerp_end.y > 512 { lerp_end.y = 512; }
             }
             else {
                 action_timer -= delta * 10.0;
@@ -964,8 +972,15 @@ class FruitCounter {
     let texture: Texture2D;
     var position: vec2;
 
+    var scale = 1.0;
+
     fun update() {
-        draw_texture_rot_scale(texture, position, 0, 0.5, (#ffff));
+        scale += (1.0 - scale) * 0.01;
+
+        let center = position + SIZE_ICON * 0.5 * 0.5;
+        let corner = center - SIZE_ICON * 0.5 * 0.5 * scale;
+
+        draw_texture_rot_scale(texture, corner, 0, 0.5 * scale, (#ffff));
 
         let text = str(count);
         let dims = measure_text_fonts(text, FONT, 64, 2);
