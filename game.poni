@@ -155,7 +155,7 @@ class Card {
 
     var may_add_card: bool = false;
 
-    fun draw(highlight: bool) {
+    fun draw(highlight: bool, playable: bool) {
         gl_push_translation(position + SIZE_CARD * 0.5);
         gl_push_scale((1, 1) * scale);
         
@@ -169,6 +169,10 @@ class Card {
 
         let icon = data.icon;
         let cost = data.cost;
+
+        if (state == STATE_HAND) and not playable {
+            modulate = (#ffff) * 0.7;
+        }
 
         if (state == STATE_DISCARD_PILE) or (state == STATE_DRAW_PILE) and (scale < 0.4) {
             draw_texture(tex.card_back, pos, modulate);
@@ -221,6 +225,21 @@ class Card {
         var highlight = false;
         let mouse = screen.mouse();
 
+        var playable = true;
+
+        if data.cost != 0 {
+            if data.cost < 0 {
+                if apples.count < -data.cost {
+                    playable = false;
+                }
+            }
+            else {
+                if carrots.count < data.cost {
+                    playable = false;
+                }
+            }
+        }
+
         var target_scale = 1.0;
 
         if (state == STATE_HAND) or (state == STATE_NEW) {
@@ -230,13 +249,13 @@ class Card {
         if highlight { target_scale = 1.2; }
 
         if state == STATE_HAND {
-            if highlight and is_mouse_button_down(MOUSE_LEFT) {
+            if highlight and playable and is_mouse_button_down(MOUSE_LEFT) {
                 current_moved_card = self;
                 current_moved_card_offset = position - mouse;
             }
 
             if current_moved_card == self {
-                let playable = position.y < screen_size.y / 2;
+                let playable = playable and (position.y < screen_size.y / 2);
                 if not is_mouse_button_down(MOUSE_LEFT) {
                     current_moved_card = nil;
                     if playable {
@@ -296,10 +315,10 @@ class Card {
         scale += (target_scale - scale) * 0.1;
 
         if (state == STATE_DRAW_PILE) or (state == STATE_DISCARD_PILE) {
-            draw(highlight);
+            draw(highlight, playable);
         }
         else {
-            draw(highlight);
+            draw(highlight, playable);
         }
     }
 }
@@ -375,6 +394,15 @@ let pile_draw = new Pile { state: STATE_DRAW_PILE };
 let pile_discard = new Pile { state: STATE_DISCARD_PILE };
 let pile_hand = new Pile { state: STATE_HAND };
 
+fun apply_costs(card: Card) {
+    if card.data.cost < 0 {
+        apples.count += card.data.cost;
+    }
+    if card.data.cost > 0 {
+        carrots.count -= card.data.cost;
+    }
+}
+
 /// Keeps track of the hand of cards
 class Hand {
     fun add_card(card: Card) {
@@ -383,6 +411,7 @@ class Hand {
 
     fun play_card(card: Card) {
         if pile_hand.remove(card) {
+            apply_costs(card);
             card.data.callback();
             pile_discard.add(card);
         }
