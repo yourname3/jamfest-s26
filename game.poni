@@ -442,6 +442,8 @@ class Sounds {
     let music_game = load_sound("sound/music.ogg");
     let music_menu = load_sound("sound/menu.ogg");
 
+    let lose = load_sound("sound/lose.ogg");
+
     /// 0 for nothing
     /// 1 for menu
     /// 2 for game
@@ -1399,6 +1401,11 @@ fun update_dt(dt: float) {
 
     // Lose when you're far off the screen.
     if horse.position.x < -256 {
+        if current_scene != SCENE_LOSE {
+            stop_sound(sound.music_menu);
+            stop_sound(sound.music_game);
+            play_sound_once(sound.lose);
+        }
         current_scene = SCENE_LOSE;
         current_scroll_speed = 0;
     }
