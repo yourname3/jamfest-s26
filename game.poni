@@ -359,7 +359,8 @@ let screen = new Screen {
 let SIZE_CARD: vec2 = (256, 340);
 let SIZE_ICON: vec2 = (256, 256);
 
-var current_scroll_speed: float = 128 - 20;
+let INITIAL_SCROLL_SPEED: float = 128 - 20;
+var current_scroll_speed: float = INITIAL_SCROLL_SPEED;
 
 fun in_rect(point: vec2, rect_pos: vec2, rect_size: vec2) -> bool {
     if (point.x < rect_pos.x) or point.y < rect_pos.y {
@@ -584,6 +585,10 @@ class Card {
 
         if (state == STATE_HAND) or (state == STATE_NEW) {
             highlight = current_moved_card.is_nil() and in_rect(mouse, position, SIZE_CARD);
+        }
+
+        if (current_scene != SCENE_GAME) {
+            highlight = false;
         }
 
         if highlight { target_scale = 1.2; }
@@ -961,8 +966,11 @@ fun restart_game() {
     spawn_rewards();
 
     horse.position = HORSE_STARTING_POS;
+    carrots.count = 0;
+    apples.count = 0;
 
     current_scene = SCENE_GAME;
+    current_scroll_speed = INITIAL_SCROLL_SPEED;
 }
 
 let play_again_button = new Button {
@@ -1002,7 +1010,7 @@ class EndTurnButton {
         }
         else {
             let mouse = screen.mouse();
-            highlight = in_rect(mouse, rpos, rsize);
+            highlight = in_rect(mouse, rpos, rsize) and (current_scene == SCENE_GAME);
 
             if not highlight { pressed = false; }
 
@@ -1174,6 +1182,7 @@ fun update_dt(dt: float) {
     // Lose when you're far off the screen.
     if horse.position.x < -256 {
         current_scene = SCENE_LOSE;
+        current_scroll_speed = 0;
     }
 
     if current_scene == SCENE_LOSE {
