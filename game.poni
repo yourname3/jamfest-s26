@@ -417,6 +417,8 @@ class Sounds {
         load_sound("sound/paper8.wav"),
     ];
 
+    let pop = load_sound("sound/pop.wav");
+
     fun paper() {
         let sfx = paper_sfx[randi_range(0, paper_sfx.length)];
         play_sound_once(sfx);
@@ -517,8 +519,8 @@ class Horse {
                 if action == ACTION_LEFT   { lerp_end = position + (-256, 0); }
                 if action == ACTION_UP     { lerp_end = position + (0, -256); }
                 if action == ACTION_DOWN   { lerp_end = position + (0,  256); }
-                if action == ACTION_APPLE  { apples.scale = 1.4; apples.count  += 1; }
-                if action == ACTION_CARROT { carrots.scale = 1.4; carrots.count += 1; }
+                if action == ACTION_APPLE  { play_sound_once(sound.pop); apples.scale = 1.4; apples.count  += 1; }
+                if action == ACTION_CARROT { play_sound_once(sound.pop); carrots.scale = 1.4; carrots.count += 1; }
                 if action == ACTION_DRAW   { draw_card(); }
 
                 if lerp_end.y < 0 { lerp_end.y = 0; }
