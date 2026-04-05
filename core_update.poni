@@ -14,6 +14,8 @@ fun compute_dt() -> float {
 
 var avg_dt = 0.003;
 
+var accumulator: float = 0;
+
 fun update() {
     // Black background for letter box
     clear_background((#000f));
@@ -23,6 +25,24 @@ fun update() {
     
     // Handle game logic
     var dt = compute_dt();
-    update_dt(dt);
+
+    let actual_dt = if dt > 0.04 { 0.04 } else { dt };
+    
+    accumulator += actual_dt;
+
+    var max_counter: int = 0;
+
+    while accumulator > 0 {
+        let timestep = 0.00416666666667;
+        update_dt(timestep);
+
+        accumulator -= timestep;
+        max_counter += 1;
+
+        // Limit at 16 updates per frame
+        if max_counter >= 16 {
+            break;
+        }
+    }
 }
 
