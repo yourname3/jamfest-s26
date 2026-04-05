@@ -283,6 +283,12 @@ fun gain_carrots(count: int) {
     for i in 0..count { action_queue_push(ACTION_CARROT); }
 }
 
+var current_scene: int = 0;
+
+let SCENE_GAME: int = 0;
+let SCENE_WIN : int = 1;
+let SCENE_LOSE: int = 2;
+
 class ActionQueueItem {
     let action: int;
     var next: ActionQueueItem?;
@@ -868,6 +874,73 @@ fun rollover_turn() {
     }
 }
 
+class Button {
+    var pressed = false;
+    var scale = 1.0;
+
+    var pos = (0.0, 0.0);
+
+    let text: StrBuf = "Play Again";
+
+    var rect_color: vec4;
+    var rect_color_highlight: vec4;
+    var text_color: vec4;
+
+    fun update(dt: float) {
+        let SIZE = 64;
+        let SCALE = 1;
+
+        let text_dim = measure_text_fonts(text, FONT, SIZE, SCALE);
+
+        let rpos = pos - (16, 16);
+        let rsize = (text_dim.x, text_dim.y) + (32, 32);
+
+        var target_scale = 1.0;
+
+        var highlight = false;
+
+        let mouse = screen.mouse();
+        highlight = in_rect(mouse, rpos, rsize);
+
+        if not highlight { pressed = false; }
+
+        if highlight and is_mouse_button_down(MOUSE_LEFT) {
+            pressed = true;
+        }
+
+        if pressed and is_mouse_button_released(MOUSE_LEFT) {
+            pressed = false;
+            
+            rollover_turn();
+        }
+
+        if highlight { target_scale = 1.2; }
+        if pressed   { target_scale = 0.8; }
+
+        scale += (target_scale - scale) * 0.1;
+
+        gl_push_translation(rpos + rsize * 0.5);
+        gl_push_scale((1, 1) * scale);
+
+        let offset = -rsize * 0.5;
+
+        draw_rectangle(offset , (rsize.x, rsize.y), if highlight { rect_color_highlight } else { rect_color });
+        draw_text_fonts(text, FONT, offset + (16, 16) + (0, text_dim.y), SIZE, SCALE, text_color);
+
+        gl_pop();
+        gl_pop();
+    }
+}
+
+let play_again_button = new Button {
+    rect_color: (#b6b6b6ff),
+    rect_color_highlight: (#c6c6c6ff),
+    text_color: (#1c1c1cff),
+
+    text: "Play Again",
+    pos: (920, 700),
+};
+
 class EndTurnButton {
     var energy = 0.0;
     var pressed = false;
@@ -1069,7 +1142,16 @@ fun update_dt(dt: float) {
     if current_scroll_speed > 512 {
         current_scroll_speed = 512;
     }
-    //print(current_scroll_speed);
 
-    //print("hand: ", pile_hand.cards.length, " draw: ", pile_draw.cards.length, " discard: ", pile_discard.cards.length);
+    // Lose when you're far off the screen.
+    if horse.position.x < -256 {
+        current_scene = SCENE_LOSE;
+    }
+
+    if current_scene == SCENE_LOSE {
+        draw_text_fonts("You Lose :(", FONT, (770, 650), 64, 2, (#1c1c1cff));
+        play_again_button.update(dt);
+        play_again_button.pos = (920, 700);
+        //draw_text_fonts("Play Again", FONT, (920, 750), 64, 1, (#1c1c1cff));
+    }
 }
