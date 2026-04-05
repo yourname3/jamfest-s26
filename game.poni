@@ -981,9 +981,11 @@ fun rollover_turn() {
         hand.discard_card(pile_hand.cards[0]);
     }
 
-    for i in 0..5 {
-        draw_card();
-    }
+    // Do this as queued actions
+    draw_cards(5);
+    // for i in 0..5 {
+    //     draw_card();
+    // }
 }
 
 class Button {
