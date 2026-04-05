@@ -421,6 +421,9 @@ let SIZE_CARD: vec2 = (256, 340);
 let SIZE_ICON: vec2 = (256, 256);
 
 let INITIAL_SCROLL_SPEED: float = 128 - 20;
+let SCROLL_SPEED2 = INITIAL_SCROLL_SPEED + 30;
+let SCROLL_SPEED3 = INITIAL_SCROLL_SPEED + 60;
+let SCROLL_SPEED4 = INITIAL_SCROLL_SPEED + 90;
 var current_scroll_speed: float = INITIAL_SCROLL_SPEED;
 
 fun in_rect(point: vec2, rect_pos: vec2, rect_size: vec2) -> bool {
@@ -1282,6 +1285,16 @@ fun update_dt(dt: float) {
         if main_timer < 0 {
             main_timer = 0;
             current_scene = SCENE_WIN;
+        }
+
+        if main_timer < 90 and current_scroll_speed < SCROLL_SPEED2 {
+            current_scroll_speed = SCROLL_SPEED2;
+        }
+        if main_timer < 60 and current_scroll_speed < SCROLL_SPEED3 {
+            current_scroll_speed = SCROLL_SPEED3;
+        }
+        if main_timer < 30 and current_scroll_speed < SCROLL_SPEED4 {
+            current_scroll_speed = SCROLL_SPEED4;
         }
     }
 
