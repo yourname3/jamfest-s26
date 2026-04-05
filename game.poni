@@ -1,5 +1,6 @@
 let CARD_MOVE_RIGHT = new CardData {
     icon: tex.arrow_right,
+    cost: -1,
 
     callback: fun() {
         right(1);
@@ -8,6 +9,7 @@ let CARD_MOVE_RIGHT = new CardData {
 
 let CARD_MOVE_UP = new CardData {
     icon: tex.arrow_up,
+    cost: 1,
 
     callback: fun() {
         up(1);
@@ -16,6 +18,7 @@ let CARD_MOVE_UP = new CardData {
 
 let CARD_MOVE_DOWN = new CardData {
     icon: tex.arrow_down,
+    cost: 1,
 
     callback: fun() {
         down(1);
@@ -23,13 +26,25 @@ let CARD_MOVE_DOWN = new CardData {
 };
 
 let CARD_GAIN_APPLE = new CardData {
-    icon: tex.apple,
+    rows: [
+        [tex.apple],
+        //[tex.apple],
+    ],
+
+    scale: 0.5,
+    //icon: tex.apple,
 
     callback: fun() { gain_apples(1); }
 };
 
 let CARD_GAIN_CARROT = new CardData {
-    icon: tex.carrot,
+    rows: [
+        [tex.carrot],
+        //[tex.carrot],
+    ],
+
+    scale: 0.5,
+    //icon: tex.carrot,
 
     callback: fun() { gain_carrots(1); }
 };
@@ -141,6 +156,7 @@ let CARD_ONETIME_6APPLE = new CardData {
         [tex.destroy_card],
     ],
     scale: 0.33,
+    cost: -1,
 
     destroys_self: true,
 
@@ -155,6 +171,7 @@ let CARD_ONETIME_MOVE3 = new CardData {
         [tex.destroy_card],
     ],
     scale: 0.33,
+    cost: -2,
 
     destroys_self: true,
 
@@ -167,6 +184,8 @@ let CARD_CURSE1 = new CardData {
     rows: [[tex.destroy_card]],
     scale: 0.5,
 
+    cost: 1,
+
     card_kind: CARD_KIND_CURSE,
 
     destroys_self: true,
@@ -177,6 +196,8 @@ let CARD_CURSE1 = new CardData {
 let CARD_CURSE2 = new CardData {
     rows: [[tex.apple], [tex.destroy_card]],
     scale: 0.5,
+
+    cost: -1,
 
     card_kind: CARD_KIND_CURSE,
 
@@ -189,6 +210,8 @@ let CARD_CURSE3 = new CardData {
     rows: [[tex.carrot], [tex.destroy_card]],
     scale: 0.5,
 
+    cost: 1,
+
     card_kind: CARD_KIND_CURSE,
 
     destroys_self: true,
@@ -199,6 +222,8 @@ let CARD_CURSE3 = new CardData {
 let CARD_CURSE4 = new CardData {
     rows: [[tex.arrow_right], [tex.destroy_card]],
     scale: 0.5,
+
+    cost: -1,
 
     card_kind: CARD_KIND_CURSE,
 
@@ -581,7 +606,7 @@ class Card {
             // else {
             //     position += (hand_position - position) * 0.8;
             // }
-            if highlight and is_mouse_button_down(MOUSE_LEFT) {
+            if highlight and playable and is_mouse_button_down(MOUSE_LEFT) {
                 may_add_card = true;
             }
 
@@ -589,7 +614,7 @@ class Card {
                 may_add_card = false;
             }
 
-            if may_add_card and not is_mouse_button_down(MOUSE_LEFT) {
+            if may_add_card and playable and not is_mouse_button_down(MOUSE_LEFT) {
                 hand.play_card(self);
                 may_add_card = false;
             }
@@ -685,7 +710,8 @@ let ALL_CARDS: DynArray[Card] = [
     new Card { data: CARD_MOVE_UP     },
     new Card { data: CARD_MOVE_DOWN   },
     new Card { data: CARD_GAIN_APPLE  },
-    new Card { data: CARD_GAIN_CARROT },
+    new Card { data: CARD_GAIN_APPLE  },
+    //new Card { data: CARD_GAIN_CARROT },
 
     new Card { data: CARD_MOVE_RIGHT  },
     new Card { data: CARD_MOVE_UP     },
