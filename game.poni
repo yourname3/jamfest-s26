@@ -419,6 +419,7 @@ class Textures {
     let arrow_down  = load_texture("tex/arrow_down.png");
 
     let horse = load_texture("tex/horse4.png");
+    let bg = load_texture("tex/bg.png");
 
     let lanes = load_texture("tex/lanes.png");
 
@@ -443,6 +444,8 @@ class Sounds {
     let music_menu = load_sound("sound/menu.ogg");
 
     let lose = load_sound("sound/lose.ogg");
+
+    let whoosh = load_sound("sound/whoosh.wav");
 
     /// 0 for nothing
     /// 1 for menu
@@ -582,10 +585,10 @@ class Horse {
                 lerp_end = position;
 
                 let action = current_item.or_panic().action;
-                if action == ACTION_RIGHT  { lerp_end = position + ( 256, 0); }
-                if action == ACTION_LEFT   { lerp_end = position + (-256, 0); }
-                if action == ACTION_UP     { lerp_end = position + (0, -256); }
-                if action == ACTION_DOWN   { lerp_end = position + (0,  256); }
+                if action == ACTION_RIGHT  { play_sound_once(sound.whoosh); lerp_end = position + ( 256, 0); }
+                if action == ACTION_LEFT   { play_sound_once(sound.whoosh); lerp_end = position + (-256, 0); }
+                if action == ACTION_UP     { play_sound_once(sound.whoosh); lerp_end = position + (0, -256); }
+                if action == ACTION_DOWN   { play_sound_once(sound.whoosh); lerp_end = position + (0,  256); }
                 if action == ACTION_APPLE  { play_sound_once(sound.pop); apples.scale = 1.4; apples.count  += 1; }
                 if action == ACTION_CARROT { play_sound_once(sound.pop); carrots.scale = 1.4; carrots.count += 1; }
                 if action == ACTION_DRAW   { draw_card(); }
@@ -1387,6 +1390,8 @@ fun update_dt(dt: float) {
         draw_text_fonts("Horse Race Time", FONT, (1200, 200), 64, 2, (#1c1c1cff));
         return;
     }
+
+    draw_texture(tex.bg, (0, 0), (#ffff));
 
     update_lanes(dt);
 
