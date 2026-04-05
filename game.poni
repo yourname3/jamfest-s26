@@ -405,12 +405,31 @@ class Textures {
     let lanes = load_texture("tex/lanes.png");
 }
 
+class Sounds {
+    let paper_sfx = [
+        load_sound("sound/paper1.wav"),
+        load_sound("sound/paper2.wav"),
+        load_sound("sound/paper3.wav"),
+        load_sound("sound/paper4.wav"),
+        load_sound("sound/paper5.wav"),
+        load_sound("sound/paper6.wav"),
+        load_sound("sound/paper7.wav"),
+        load_sound("sound/paper8.wav"),
+    ];
+
+    fun paper() {
+        let sfx = paper_sfx[randi_range(0, paper_sfx.length)];
+        play_sound_once(sfx);
+    }
+}
+
 let FONT = load_font("font/Oswald-Regular.ttf");
 let FONT_COLOR = (#342f28ff);
 
 let screen_size = (256 * 8, 256 * 6);
 
 let tex = new Textures{};
+let sound = new Sounds{};
 
 let screen = new Screen {
     target_size: screen_size,
@@ -564,6 +583,8 @@ class Card {
     var may_add_card: bool = false;
 
     var alpha: float = 1.0;
+
+    var was_highlight: bool = false;
 
     fun draw(highlight: bool, playable: bool) {
         gl_push_translation(position + SIZE_CARD * 0.5);
@@ -779,6 +800,11 @@ class Card {
         else {
             draw(highlight, playable);
         }
+
+        if highlight and not was_highlight {
+            sound.paper();
+        }
+        was_highlight = highlight;
     }
 }
 
@@ -941,6 +967,8 @@ fun draw_card() {
 
     let card = get_card();
     let card = card else return;
+
+    sound.paper();
 
     // We already removed the card from pile_draw using pop_or_panic().
     hand.add_card(card);
