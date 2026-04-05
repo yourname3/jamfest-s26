@@ -1260,7 +1260,7 @@ class FruitCounter {
     }
 }
 
-let MAIN_TIMER_INIT: float = 5.0; //120.0;
+let MAIN_TIMER_INIT: float = 120.0;
 /// Main timer for winning the game
 var main_timer: float = MAIN_TIMER_INIT;
 
@@ -1310,17 +1310,21 @@ fun update_dt(dt: float) {
 
     if current_scene == SCENE_LOSE {
         draw_text_fonts("You Lose :(", FONT, (770, 650), 64, 2, (#1c1c1cff));
-        play_again_button.update(dt);
+        
         play_again_button.pos = (920, 700);
         //draw_text_fonts("Play Again", FONT, (920, 750), 64, 1, (#1c1c1cff));
+
+        play_again_button.update(dt);
     }
 
     if current_scene == SCENE_WIN {
         draw_text_fonts("You Win :)", FONT, (770, 650), 64, 2, (#1c1c1cff));
-        play_again_button.update(dt);
+        
         play_again_button.pos = (920, 700);
         current_scroll_speed = 0;
         //draw_text_fonts("Play Again", FONT, (920, 750), 64, 1, (#1c1c1cff));
+
+        play_again_button.update(dt);
     }
 
     if current_scene == SCENE_GAME {
