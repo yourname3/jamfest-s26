@@ -446,6 +446,7 @@ class Sounds {
     let lose = load_sound("sound/lose.ogg");
 
     let whoosh = load_sound("sound/whoosh.wav");
+    let chonk = load_sound("sound/chonk.wav");
 
     /// 0 for nothing
     /// 1 for menu
@@ -814,6 +815,7 @@ class Card {
             let corner = center - size * 0.5;
 
             if in_rect(horse.position + SIZE_ICON * 0.5, corner, size) {
+                play_sound_once(sound.chonk);
                 pile_discard.add(self);
             }
         }
