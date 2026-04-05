@@ -782,22 +782,23 @@ class Card {
             // else {
             //     position += (hand_position - position) * 0.8;
             // }
-            if highlight and playable and is_mouse_button_down(MOUSE_LEFT) {
-                may_add_card = true;
-            }
-
-            if not highlight {
-                may_add_card = false;
-            }
-
-            if may_add_card and playable and not is_mouse_button_down(MOUSE_LEFT) {
+            if highlight and playable and is_mouse_button_pressed(MOUSE_LEFT) {
                 hand.play_card(self);
-                may_add_card = false;
+                //may_add_card = true;
             }
 
-            if may_add_card {
-                target_scale *= 0.93;
-            }
+            // if not highlight {
+            //     may_add_card = false;
+            // }
+
+            // if may_add_card and playable and not is_mouse_button_down(MOUSE_LEFT) {
+            //     hand.play_card(self);
+            //     may_add_card = false;
+            // }
+
+            // if may_add_card {
+            //     target_scale *= 0.93;
+            // }
         }
 
         if state == STATE_ON_TRACK {
@@ -973,6 +974,11 @@ class Hand {
             else {
                 pile_discard.add(card);
             }
+
+            // Rearrange cards when we have a lot.
+            if pile_hand.cards.length >= 6 {
+                update_card_hand_pos();
+            }
         }
     }
 
@@ -983,6 +989,12 @@ class Hand {
     }
 
     fun update() {
+
+
+
+    }
+
+    fun update_card_hand_pos() {
         let cards = pile_hand.cards;
 
         let screen_center = screen_size.x / 2;
@@ -990,6 +1002,8 @@ class Hand {
 
         let start_x = screen_center - width * 0.5;
         let increment: float = SIZE_CARD.x + 20;
+
+        let cards = pile_hand.cards;
 
         for i in 0..cards.length {
             let card = cards[i];
@@ -1041,6 +1055,8 @@ fun draw_card() {
 
     // We already removed the card from pile_draw using pop_or_panic().
     hand.add_card(card);
+
+    hand.update_card_hand_pos();
 }
 
 fun rollover_turn() {
