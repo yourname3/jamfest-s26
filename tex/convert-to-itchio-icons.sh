@@ -1,0 +1,1 @@
+echo for e in *.png; do convert $e -resize 32x32 ../extras/instructions/$e; done
