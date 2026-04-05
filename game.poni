@@ -396,6 +396,8 @@ let ACTION_APPLE: int = 4;
 let ACTION_CARROT: int = 5;
 let ACTION_DRAW:  int = 6;
 
+let HORSE_STARTING_POS: vec2 = (screen_size.x / 2, 256);
+
 class Horse {
     var position: vec2 = (screen_size.x / 2, 256);
 
@@ -711,20 +713,22 @@ let carrots = new FruitCounter {
     position: (1000, 1200)
 };
 
-let ALL_CARDS: DynArray[Card] = [
-    new Card { data: CARD_MOVE_RIGHT  },
-    new Card { data: CARD_MOVE_UP     },
-    new Card { data: CARD_MOVE_DOWN   },
-    new Card { data: CARD_GAIN_APPLE  },
-    new Card { data: CARD_GAIN_APPLE  },
+let STARTING_DECK: DynArray[CardData] = [
+    CARD_MOVE_RIGHT ,
+    CARD_MOVE_UP    ,
+    CARD_MOVE_DOWN  ,
+    CARD_GAIN_APPLE ,
+    CARD_GAIN_APPLE ,
     //new Card { data: CARD_GAIN_CARROT },
 
-    new Card { data: CARD_MOVE_RIGHT  },
-    new Card { data: CARD_MOVE_UP     },
-    new Card { data: CARD_MOVE_DOWN   },
-    new Card { data: CARD_GAIN_APPLE  },
-    new Card { data: CARD_GAIN_CARROT },
+    CARD_MOVE_RIGHT ,
+    CARD_MOVE_UP    ,
+    CARD_MOVE_DOWN  ,
+    CARD_GAIN_APPLE ,
+    CARD_GAIN_CARROT,
 ];
+
+var ALL_CARDS: DynArray[Card] = [];
 
 class Pile {
     var cards: DynArray[Card] = [];
@@ -886,6 +890,8 @@ class Button {
     var rect_color_highlight: vec4;
     var text_color: vec4;
 
+    let callback: fun();
+
     fun update(dt: float) {
         let SIZE = 64;
         let SCALE = 1;
@@ -932,6 +938,28 @@ class Button {
     }
 }
 
+fun restart_game() {
+    ALL_CARDS = [];
+    for i in 0..STARTING_DECK.length {
+        //ALL_CARDS.push(new Card { data: STARTING_DECK[i] });
+    }
+
+    for i in 0..ALL_CARDS.length {
+        pile_draw.add(ALL_CARDS[i]);
+    }
+
+    pile_draw.shuffle();
+    for i in 0..5 {
+        draw_card();
+    }
+
+    spawn_rewards();
+
+    horse.position = HORSE_STARTING_POS;
+
+    current_scene = SCENE_GAME;
+}
+
 let play_again_button = new Button {
     rect_color: (#b6b6b6ff),
     rect_color_highlight: (#c6c6c6ff),
@@ -939,6 +967,8 @@ let play_again_button = new Button {
 
     text: "Play Again",
     pos: (920, 700),
+
+    callback: restart_game,
 };
 
 class EndTurnButton {
@@ -1015,21 +1045,14 @@ fun initialize() {
     //     ALL_CARDS[card].state = STATE_HAND;
     // }
 
-    for i in 0..ALL_CARDS.length {
-        pile_draw.add(ALL_CARDS[i]);
-    }
-
-    pile_draw.shuffle();
-    for i in 0..5 {
-        draw_card();
-    }
+    restart_game();
 
     // ALL_CARDS.push(new Card {
     //     data: CARD_MOVE_RIGHT,
     //     state: STATE_NEW,
     //     position: (screen_size.x, screen_size.y / 3) + (SIZE_CARD * 0.5),
     // });
-    spawn_rewards();
+    
 }
 
 // Spawns cards off-screen.
