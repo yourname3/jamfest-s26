@@ -53,15 +53,42 @@ var draw_card_fn = fun() {};
 
 let CARD_DRAW_2 = new CardData {
     rows: [
-        [tex.draw_card, tex.draw_card]
+        [tex.draw_card, tex.draw_card, tex.draw_card]
+    ],
+
+    cost: 1,
+    scale: 0.33,
+
+    callback: fun() {
+        draw_cards(3);
+    }
+};
+
+let CARD_MORE_APPLES = new CardData {
+    rows: [
+        [tex.apple],
+        [tex.apple],
     ],
 
     cost: 1,
     scale: 0.5,
 
     callback: fun() {
-        draw_card_fn();
-        draw_card_fn();
+        gain_apples(2);
+    }
+};
+
+let CARD_MORE_CARROTS = new CardData {
+    rows: [
+        [tex.carrot],
+        [tex.carrot],
+    ],
+
+    cost: 1,
+    scale: 0.5,
+
+    callback: fun() {
+        gain_carrots(2);
     }
 };
 
@@ -77,10 +104,7 @@ let CARD_DRAW_4 = new CardData {
 
     callback: fun() {
         left(1);
-        draw_card_fn();
-        draw_card_fn();
-        draw_card_fn();
-        draw_card_fn();
+        draw_cards(4);
     }
 };
 
@@ -100,26 +124,27 @@ let CARD_MOVE_4 = new CardData {
     rows: [
         [tex.arrow_right, tex.arrow_right],
         [tex.arrow_right, tex.arrow_right],
+        [tex.apple, tex.apple],
     ],
 
     cost: -5,
     scale: 0.5,
 
-    callback: fun() { right(4); }
+    callback: fun() { right(4); gain_apples(2); }
 };
 
 let CARD_FARM_LEFT = new CardData {
     rows: [
-        [tex.arrow_left, tex.arrow_left, tex.arrow_left],
+        [tex.draw_card, tex.draw_card],
         [tex.apple, tex.apple],
-        [tex.carrot, tex.carrot],
+        [tex.arrow_left, tex.arrow_left],
     ],
     scale: 0.335,
 
     callback: fun() { 
-        left(3);
+        draw_cards(2);
         gain_apples(2);
-        gain_carrots(2);
+        left(2);
     }
 };
 
@@ -132,20 +157,20 @@ let CARD_GAIN_APPLE_UP = new CardData {
 
     callback: fun() {
         gain_apples(1);
-        down(1);
+        up(1);
     }
 };
 
 let CARD_GAIN_CARROT_DOWN = new CardData {
     rows: [
         [tex.carrot],
-        [tex.arrow_up],
+        [tex.arrow_down],
     ],
     scale: 0.5,
 
     callback: fun() {
         gain_carrots(1);
-        up(1);
+        down(1);
     }
 };
 
@@ -177,6 +202,24 @@ let CARD_ONETIME_MOVE3 = new CardData {
 
     callback: fun() {
         right(3);
+    }
+};
+
+let CARD_ONETIME_DRAW2 = new CardData {
+    rows: [
+        [tex.draw_card, tex.draw_card, tex.draw_card],
+        [tex.carrot],
+        [tex.destroy_card],
+    ],
+
+    scale: 0.33,
+    cost: 1,
+
+    destroys_self: true,
+
+    callback: fun() {
+        draw_cards(3);
+        gain_carrots(1);
     }
 };
 
@@ -239,11 +282,15 @@ let REWARD_CARDS = [
     CARD_GAIN_APPLE_UP,
     CARD_GAIN_CARROT_DOWN,
 
+    CARD_MORE_APPLES,
+    CARD_MORE_CARROTS,
+
     CARD_DRAW_2,
     CARD_DRAW_4,
 
     CARD_ONETIME_6APPLE,
     CARD_ONETIME_MOVE3,
+    CARD_ONETIME_DRAW2,
 ];
 
 let CURSE_CARDS = [
@@ -281,6 +328,9 @@ fun gain_apples(count: int) {
 }
 fun gain_carrots(count: int) {
     for i in 0..count { action_queue_push(ACTION_CARROT); }
+}
+fun draw_cards(count: int) {
+    for i in 0..count { action_queue_push(ACTION_DRAW); }
 }
 
 var current_scene: int = 0;
@@ -447,9 +497,15 @@ class Horse {
                 if action == ACTION_DOWN   { lerp_end = position + (0,  256); }
                 if action == ACTION_APPLE  { apples.scale = 1.4; apples.count  += 1; }
                 if action == ACTION_CARROT { carrots.scale = 1.4; carrots.count += 1; }
+                if action == ACTION_DRAW   { draw_card(); }
 
                 if lerp_end.y < 0 { lerp_end.y = 0; }
                 if lerp_end.y > 512 { lerp_end.y = 512; }
+
+                // Clamp to side of screen
+                if lerp_end.x > screen_size.x {
+                    lerp_end.x = lerp_start.x;
+                }
             }
             else {
                 action_timer -= delta * 10.0;
@@ -737,7 +793,7 @@ let STARTING_DECK: DynArray[CardData] = [
     CARD_MOVE_UP    ,
     CARD_MOVE_DOWN  ,
     CARD_GAIN_APPLE ,
-    CARD_GAIN_APPLE ,
+    CARD_GAIN_CARROT,
     //new Card { data: CARD_GAIN_CARROT },
 
     CARD_MOVE_RIGHT ,
@@ -1217,6 +1273,7 @@ fun update_dt(dt: float) {
         draw_text_fonts("You Win :)", FONT, (770, 650), 64, 2, (#1c1c1cff));
         play_again_button.update(dt);
         play_again_button.pos = (920, 700);
+        current_scroll_speed = 0;
         //draw_text_fonts("Play Again", FONT, (920, 750), 64, 1, (#1c1c1cff));
     }
 
