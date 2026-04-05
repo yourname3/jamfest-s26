@@ -295,6 +295,7 @@ class ActionQueueItem {
 }
 
 var action_queue: ActionQueueItem? = nil;
+var action_queue_tail: ActionQueueItem? = nil;
 var action_queue_push: fun(int) = fun(x: int) {};
 var action_queue_pop: fun() -> ActionQueueItem? = fun() -> ActionQueueItem? { nil };
 
@@ -304,10 +305,20 @@ fun action_queue_push_impl(action: int) {
         next: nil,
     };
 
-    if action_queue.is_some() {
-        action_queue.or_panic().next = item;
+    if action_queue_tail.is_some() {
+        print("Chain Action To Tail: ", action);
+        action_queue_tail.or_panic().next = item;
+        action_queue_tail = item;
     }
     else {
+        print("Rewrite Tail: ", action);
+        action_queue_tail = item;
+        //action_queue = item;
+    }
+
+    // If action_queue is pointing at the nil at the end,
+    // it is now pointing at the new item.
+    if action_queue.is_nil() {
         action_queue = item;
     }
 }
@@ -416,6 +427,9 @@ class Horse {
 
         if current_item.is_nil() {
             current_item = action_queue;
+            if current_item.is_some() {
+                print("Horse: Next Item: ", current_item.or_panic().action);
+            }
         }
 
         if current_item.is_some() {
@@ -966,6 +980,7 @@ fun restart_game() {
     spawn_rewards();
 
     horse.position = HORSE_STARTING_POS;
+    lane_position = 0;
     carrots.count = 0;
     apples.count = 0;
 
