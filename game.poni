@@ -421,6 +421,8 @@ class Textures {
     let horse = load_texture("tex/horse4.png");
 
     let lanes = load_texture("tex/lanes.png");
+
+    let menu = load_texture("tex/menu.png");
 }
 
 class Sounds {
@@ -1361,8 +1363,10 @@ fun update_dt(dt: float) {
     sound.update();
 
     if current_scene == SCENE_MENU {
+        draw_texture(tex.menu, (0, 0), (#ffff));
+        play_button.pos = (1500, 300);
         play_button.update(dt);
-        draw_text_fonts("Horse Race Time", FONT, (400, 400), 64, 2, (#1c1c1cff));
+        draw_text_fonts("Horse Race Time", FONT, (1200, 200), 64, 2, (#1c1c1cff));
         return;
     }
 
