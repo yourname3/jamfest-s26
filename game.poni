@@ -1286,7 +1286,7 @@ fun initialize() {
     //     state: STATE_NEW,
     //     position: (screen_size.x, screen_size.y / 3) + (SIZE_CARD * 0.5),
     // });
-    
+    seed_random_with_time();
 }
 
 // Spawns cards off-screen.
