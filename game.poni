@@ -1047,7 +1047,9 @@ class Button {
     }
 }
 
-fun restart_game() {
+var restart_game: fun() = fun(){print("OOPS!!!")};
+fun restart_game_impl() {
+    print("RESTART GAME!!!!!");
     pile_draw.cards    = [];
     pile_discard.cards = [];
     pile_hand.cards    = [];
@@ -1076,6 +1078,14 @@ fun restart_game() {
     current_scene = SCENE_GAME;
     current_scroll_speed = INITIAL_SCROLL_SPEED;
 
+    action_queue_tail = nil;
+    action_queue = nil;
+
+    horse.current_item = nil;
+    horse.lerp_end = horse.position;
+    horse.lerp_start = horse.position;
+    horse.action_timer = -1;
+
     main_timer = MAIN_TIMER_INIT;
 }
 
@@ -1087,7 +1097,9 @@ let play_again_button = new Button {
     text: "Play Again",
     pos: (920, 700),
 
-    callback: restart_game,
+    callback: fun() {
+        restart_game();
+    },
 };
 
 class EndTurnButton {
@@ -1248,18 +1260,19 @@ class FruitCounter {
     }
 }
 
-let MAIN_TIMER_INIT: float = 120.0;
+let MAIN_TIMER_INIT: float = 5.0; //120.0;
 /// Main timer for winning the game
 var main_timer: float = MAIN_TIMER_INIT;
 
 fun update_dt(dt: float) {
     if not has_initialized {
-        initialize();
-        has_initialized = true;
-
         draw_card_fn = draw_card;
         action_queue_pop = action_queue_pop_impl;
         action_queue_push = action_queue_push_impl;
+        restart_game = restart_game_impl;
+
+        initialize();
+        has_initialized = true;
     }
 
     update_lanes(dt);
