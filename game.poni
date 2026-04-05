@@ -374,12 +374,12 @@ fun action_queue_push_impl(action: int) {
     };
 
     if action_queue_tail.is_some() {
-        print("Chain Action To Tail: ", action);
+        //print("Chain Action To Tail: ", action);
         action_queue_tail.or_panic().next = item;
         action_queue_tail = item;
     }
     else {
-        print("Rewrite Tail: ", action);
+        //print("Rewrite Tail: ", action);
         action_queue_tail = item;
         //action_queue = item;
     }
@@ -572,9 +572,9 @@ class Horse {
 
         if current_item.is_nil() {
             current_item = action_queue;
-            if current_item.is_some() {
-                print("Horse: Next Item: ", current_item.or_panic().action);
-            }
+            // if current_item.is_some() {
+            //     print("Horse: Next Item: ", current_item.or_panic().action);
+            // }
         }
 
         if current_item.is_some() {
@@ -1139,7 +1139,7 @@ class Button {
 
 var restart_game: fun() = fun(){print("OOPS!!!")};
 fun restart_game_impl() {
-    print("RESTART GAME!!!!!");
+    //print("RESTART GAME!!!!!");
     pile_draw.cards    = [];
     pile_discard.cards = [];
     pile_hand.cards    = [];
