@@ -82,13 +82,14 @@ let CARD_MORE_CARROTS = new CardData {
     rows: [
         [tex.carrot],
         [tex.carrot],
+        [tex.carrot],
     ],
 
     cost: 1,
-    scale: 0.5,
+    scale: 0.33,
 
     callback: fun() {
-        gain_carrots(2);
+        gain_carrots(3);
     }
 };
 
@@ -128,7 +129,7 @@ let CARD_MOVE_4 = new CardData {
     ],
 
     cost: -5,
-    scale: 0.5,
+    scale: 0.33,
 
     callback: fun() { right(4); gain_apples(2); }
 };
