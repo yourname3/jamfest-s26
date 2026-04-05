@@ -441,6 +441,7 @@ class Sounds {
     let pop = load_sound("sound/pop.wav");
     let poof = load_sound("sound/poof.wav");
     let click = load_sound("sound/click.wav");
+    let click_click = load_sound("sound/click_click.wav");
 
     let music_game = load_sound("sound/music.ogg");
     let music_menu = load_sound("sound/menu.ogg");
@@ -838,6 +839,7 @@ class Card {
             if may_add_card and not is_mouse_button_down(MOUSE_LEFT) {
                 // I think we want new cards to go in the discard pile?
                 pile_discard.add(self);
+                play_sound_once(sound.click_click);
                 may_add_card = false;
             }
 
@@ -1120,6 +1122,7 @@ class Button {
         if pressed and is_mouse_button_released(MOUSE_LEFT) {
             pressed = false;
             
+            play_sound_once(sound.click);
             callback();
         }
 
@@ -1248,7 +1251,8 @@ class EndTurnButton {
             if pressed and is_mouse_button_released(MOUSE_LEFT) {
                 pressed = false;
                 energy = 0;
-                
+
+                play_sound_once(sound.click);   
                 rollover_turn();
             }
         }
