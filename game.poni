@@ -439,6 +439,8 @@ class Sounds {
     ];
 
     let pop = load_sound("sound/pop.wav");
+    let poof = load_sound("sound/poof.wav");
+    let click = load_sound("sound/click.wav");
 
     let music_game = load_sound("sound/music.ogg");
     let music_menu = load_sound("sound/menu.ogg");
@@ -974,9 +976,11 @@ class Hand {
             apply_costs(card);
             card.data.callback();
             if card.data.destroys_self {
+                play_sound_once(sound.poof);
                 card.state = STATE_DESTROYED;
             }
             else {
+                play_sound_once(sound.click);
                 pile_discard.add(card);
             }
 
