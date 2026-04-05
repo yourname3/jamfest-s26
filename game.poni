@@ -971,6 +971,8 @@ fun restart_game() {
 
     current_scene = SCENE_GAME;
     current_scroll_speed = INITIAL_SCROLL_SPEED;
+
+    main_timer = MAIN_TIMER_INIT;
 }
 
 let play_again_button = new Button {
@@ -1142,6 +1144,10 @@ class FruitCounter {
     }
 }
 
+let MAIN_TIMER_INIT: float = 120.0;
+/// Main timer for winning the game
+var main_timer: float = MAIN_TIMER_INIT;
+
 fun update_dt(dt: float) {
     if not has_initialized {
         initialize();
@@ -1191,4 +1197,37 @@ fun update_dt(dt: float) {
         play_again_button.pos = (920, 700);
         //draw_text_fonts("Play Again", FONT, (920, 750), 64, 1, (#1c1c1cff));
     }
+
+    if current_scene == SCENE_WIN {
+        draw_text_fonts("You Win :)", FONT, (770, 650), 64, 2, (#1c1c1cff));
+        play_again_button.update(dt);
+        play_again_button.pos = (920, 700);
+        //draw_text_fonts("Play Again", FONT, (920, 750), 64, 1, (#1c1c1cff));
+    }
+
+    if current_scene == SCENE_GAME {
+        main_timer -= dt;
+        if main_timer < 0 {
+            main_timer = 0;
+            current_scene = SCENE_WIN;
+        }
+    }
+
+    let minutes = floor(main_timer / 60);
+    let seconds = floor(main_timer - (minutes * 60));
+    let hundredths = floor((main_timer - (minutes * 60) - seconds) * 100);
+
+    let minutes = str(minutes);
+
+    var seconds = str(seconds);
+    while seconds.length < 2 {
+        seconds = str("0", seconds);
+    }
+    var hundredths = str(hundredths);
+    while hundredths.length < 2 {
+        hundredths = str("0", hundredths);
+    }
+
+    let time = str(minutes, ":", seconds, ".", hundredths);
+    draw_text_fonts(time, FONT, (1780, 1350), 32, 2, (#232323ff));
 }
