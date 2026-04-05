@@ -1,5 +1,5 @@
 ITCH_USER=some-games-by-bee
-ITCH_GAME=jamfest-2026
+ITCH_GAME=horse-race-time
 
 butler push .build/web-dist     "$ITCH_USER/$ITCH_GAME:web-jam"
 butler push .build/windows-dist "$ITCH_USER/$ITCH_GAME:windows-jam"

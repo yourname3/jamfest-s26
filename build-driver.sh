@@ -10,7 +10,7 @@ mkdir -p "$DIST"
 function copy_resources() {
     if [[ -d "$1" ]]; then 
         mkdir -p "$DIST/$1"
-        find "$1" -name "*.$2" -exec cp {} "$DIST/$1" \;
+        find "$1" -maxdepth 1  -name "*.$2" -exec cp {} "$DIST/$1" \;
     else
         echo "no resource directory $1"
     fi
