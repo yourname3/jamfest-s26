@@ -350,11 +350,12 @@ fun draw_cards(count: int) {
     for i in 0..count { action_queue_push(ACTION_DRAW); }
 }
 
-var current_scene: int = 0;
+var current_scene: int = SCENE_MENU;
 
 let SCENE_GAME: int = 0;
 let SCENE_WIN : int = 1;
 let SCENE_LOSE: int = 2;
+let SCENE_MENU: int = 3;
 
 class ActionQueueItem {
     let action: int;
@@ -459,11 +460,28 @@ class Sounds {
             play_music = 2;
         }
     }
+
+    fun menu_music() {
+        stop_sound(music_menu);
+        stop_sound(music_game);
+        if is_sound_loaded(music_menu) {
+            play_sound_once(music_menu);
+        }
+        else {
+            play_music = 1;
+        }
+    }
     
     fun update() {
         if play_music == 2 {
             if is_sound_loaded(music_game) {
                 play_sound_once(music_game);
+                play_music = 0;
+            }
+        }
+        if play_music == 1 {
+            if is_sound_loaded(music_menu) {
+                play_sound_looping(music_menu);
                 play_music = 0;
             }
         }
@@ -1151,6 +1169,19 @@ let play_again_button = new Button {
     },
 };
 
+let play_button = new Button {
+    rect_color: (#b6b6b6ff),
+    rect_color_highlight: (#c6c6c6ff),
+    text_color: (#1c1c1cff),
+
+    text: "Play!",
+    pos: (920, 700),
+
+    callback: fun() {
+        restart_game();
+    },
+};
+
 class EndTurnButton {
     var energy = 0.0;
     var pressed = false;
@@ -1225,7 +1256,7 @@ fun initialize() {
     //     ALL_CARDS[card].state = STATE_HAND;
     // }
 
-    restart_game();
+    //restart_game();
 
     // ALL_CARDS.push(new Card {
     //     data: CARD_MOVE_RIGHT,
@@ -1323,10 +1354,17 @@ fun update_dt(dt: float) {
         restart_game = restart_game_impl;
 
         initialize();
+        sound.menu_music();
         has_initialized = true;
     }
 
     sound.update();
+
+    if current_scene == SCENE_MENU {
+        play_button.update(dt);
+        draw_text_fonts("Horse Race Time", FONT, (400, 400), 64, 2, (#1c1c1cff));
+        return;
+    }
 
     update_lanes(dt);
 
