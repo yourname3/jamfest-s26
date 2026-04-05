@@ -436,9 +436,37 @@ class Sounds {
 
     let pop = load_sound("sound/pop.wav");
 
+    let music_game = load_sound("sound/music.ogg");
+    let music_menu = load_sound("sound/menu.ogg");
+
+    /// 0 for nothing
+    /// 1 for menu
+    /// 2 for game
+    var play_music: int = 0;
+
     fun paper() {
         let sfx = paper_sfx[randi_range(0, paper_sfx.length)];
         play_sound_once(sfx);
+    }
+
+    fun game_music() {
+        stop_sound(music_menu);
+        stop_sound(music_game);
+        if is_sound_loaded(music_game) {
+            play_sound_once(music_game);
+        }
+        else {
+            play_music = 2;
+        }
+    }
+    
+    fun update() {
+        if play_music == 2 {
+            if is_sound_loaded(music_game) {
+                play_sound_once(music_game);
+                play_music = 0;
+            }
+        }
     }
 }
 
@@ -1105,6 +1133,8 @@ fun restart_game_impl() {
     horse.lerp_start = horse.position;
     horse.action_timer = -1;
 
+    sound.game_music();
+
     main_timer = MAIN_TIMER_INIT;
 }
 
@@ -1295,6 +1325,8 @@ fun update_dt(dt: float) {
         initialize();
         has_initialized = true;
     }
+
+    sound.update();
 
     update_lanes(dt);
 
