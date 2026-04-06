@@ -317,6 +317,15 @@ let CURSE_CARDS = [
     CARD_CURSE4,
 ];
 
+var filter_fact_mul: float = 1.0;
+fun filter_fact(t: float) -> float {
+    var f = t * filter_fact_mul;
+    if f > 1 { f = 1; }
+    if f <= 0.000001 { f = 0.000001; }
+    return f;
+    //return t * 4;
+}
+
 fun up(tiles: int) {
     for i in 0..tiles { action_queue_push(ACTION_UP); }
     // for i in 0..tiles {
@@ -768,7 +777,7 @@ class Card {
             //     current_moved_card = self;
             //     current_moved_card_offset = position - mouse;
             // }
-            position += (hand_position - position) * 0.1;
+            position += (hand_position - position) * filter_fact(0.1);
 
             // if current_moved_card == self {
             //     let playable = playable and (position.y < screen_size.y / 2);
@@ -855,23 +864,23 @@ class Card {
 
         if state == STATE_DISCARD_PILE {
             target_scale = 0.2;
-            position += (DISCARD_PILE_POS - position) * 0.1;
+            position += (DISCARD_PILE_POS - position) * filter_fact(0.1);
         }
 
         if state == STATE_DRAW_PILE {
             target_scale = 0.2;
-            position += (DRAW_PILE_POS - position) * 0.1;
+            position += (DRAW_PILE_POS - position) * filter_fact(0.1);
         }
 
         if state == STATE_DESTROYED {
             target_scale = 0.7;
-            position += (DESTROYED_POS - position) * 0.002;
+            position += (DESTROYED_POS - position) * filter_fact(0.002);
 
             alpha -= delta * 4.0;
             if alpha < 0 { alpha = 0; }
         }
 
-        scale += (target_scale - scale) * 0.1;
+        scale += (target_scale - scale) * filter_fact(0.1);
 
         if (state == STATE_DRAW_PILE) or (state == STATE_DISCARD_PILE) {
             draw(highlight, playable);
@@ -1129,7 +1138,7 @@ class Button {
         if highlight { target_scale = 1.2; }
         if pressed   { target_scale = 0.8; }
 
-        scale += (target_scale - scale) * 0.1;
+        scale += (target_scale - scale) * filter_fact(0.1);
 
         gl_push_translation(rpos + rsize * 0.5);
         gl_push_scale((1, 1) * scale);
@@ -1260,7 +1269,7 @@ class EndTurnButton {
         if highlight { target_scale = 1.2; }
         if pressed   { target_scale = 0.8; }
 
-        scale += (target_scale - scale) * 0.1;
+        scale += (target_scale - scale) * filter_fact(0.1);
 
         gl_push_translation(rpos + rsize * 0.5);
         gl_push_scale((1, 1) * scale);
@@ -1360,7 +1369,7 @@ class FruitCounter {
     var scale = 1.0;
 
     fun update() {
-        scale += (1.0 - scale) * 0.01;
+        scale += (1.0 - scale) * filter_fact(0.01);
 
         let center = position + SIZE_ICON * 0.5 * 0.5;
         let corner = center - SIZE_ICON * 0.5 * 0.5 * scale;
